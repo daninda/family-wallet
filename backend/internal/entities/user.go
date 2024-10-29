@@ -7,5 +7,5 @@ type User struct {
 	PasswordHash string `json:"passwordHash" db:"password_hash"`
 	HouseholdId int `json:"householdId" db:"household_id"`
 	Accepted bool `json:"accepted" db:"accepted"`
-	Limitation int `json:"limitation" db:"limitation"`
+	Limitation *int `json:"limitation" db:"limitation"`
 }
