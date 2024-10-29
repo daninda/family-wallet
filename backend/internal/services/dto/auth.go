@@ -1,9 +1,5 @@
 package dto
 
-import (
-	"family-wallet/internal/entities"
-)
-
 type RegisterInput struct {
 	Name        string `json:"name"`
 	Email       string `json:"email"`
@@ -14,8 +10,17 @@ type RegisterInput struct {
 }
 
 type RegisterOutput struct {
-	User  entities.User `json:"user"`
-	Token string        `json:"token"`
+	User  UserOutput `json:"user"`
+	Token string     `json:"token"`
+}
+
+type UserOutput struct {
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+	Accepted    bool   `json:"accepted"`
+	IsAdmin     bool   `json:"isAdmin"`
+	HouseholdId int    `json:"householdId"`
 }
 
 type LoginInput struct {

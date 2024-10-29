@@ -22,12 +22,12 @@ func (a *Auth) Register(
 	input *dto.RegisterInput,
 ) (*dto.RegisterOutput, error) {
 	row := a.db.QueryRowx(`
-		SELECT * FROM users WHERE email = $1
+		SELECT id FROM users WHERE email = $1
 	`, input.Email)
 
-	var existsUser entities.User
+	var existsId int
 
-	if err := row.Scan(&existsUser); err == nil {
+	if err := row.Scan(&existsId); err == nil {
 		return nil, errors.New("user already exists")
 	}
 
@@ -35,10 +35,10 @@ func (a *Auth) Register(
 
 	if input.IsAdmin {
 		row := a.db.QueryRowx(`
-			INSERT INTO households () VALUES () RETURNING *
+			INSERT INTO households (id) VALUES (DEFAULT) RETURNING *
 		`)
 
-		if err := row.Scan(&household); err != nil {
+		if err := row.Scan(&household.Id); err != nil {
 			return nil, errors.New("could not create household")
 		}
 	} else {
@@ -66,7 +66,7 @@ func (a *Auth) Register(
 
 	row = a.db.QueryRowx(`
 		INSERT INTO users (name, email, password_hash, is_admin, accepted, household_id) 
-		VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
+		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
 	`, user.Name, user.Email, user.PasswordHash, user.IsAdmin, user.Accepted, user.HouseholdId,
 	)
 
@@ -80,7 +80,7 @@ func (a *Auth) Register(
 		return nil, errors.New("could not generate token")
 	}
 
-	return &dto.RegisterOutput{User: user, Token: token}, nil
+	return &dto.RegisterOutput{User: dto.UserOutput{Id: user.Id, Name: user.Name, Email: user.Email, Accepted: user.Accepted, IsAdmin: user.IsAdmin, HouseholdId: user.HouseholdId}, Token: token}, nil
 }
 
 func (a *Auth) Login(input *dto.LoginInput) (*dto.LoginOutput, error) {
@@ -104,5 +104,5 @@ func (a *Auth) Login(input *dto.LoginInput) (*dto.LoginOutput, error) {
 		return nil, errors.New("could not generate token")
 	}
 
-	return &dto.LoginOutput{User: user, Token: token}, nil
+	return &dto.LoginOutput{User: dto.UserOutput{Id: user.Id, Name: user.Name, Email: user.Email, Accepted: user.Accepted, IsAdmin: user.IsAdmin, HouseholdId: user.HouseholdId}, Token: token}, nil
 }

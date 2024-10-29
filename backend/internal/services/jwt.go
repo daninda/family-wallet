@@ -25,7 +25,7 @@ func (j *Jwt) GenerateToken(userId int) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(j.secret)
+	return token.SignedString([]byte(j.secret))
 }
 
 func (j *Jwt) ValidateToken(tokenString string) (int, error) {
