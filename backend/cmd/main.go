@@ -28,7 +28,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not connect to migrations: %v", err)
 	}
-	if err := m.Up(); err != nil {
+	if err := m.Steps(1); err != nil {
 		log.Printf("Could not run migrations: %v", err)
 	}
 
