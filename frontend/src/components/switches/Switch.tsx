@@ -17,7 +17,6 @@ const SwitchTrack = styled.div<{ checked: boolean }>`
   border-radius: 50vh;
   position: relative;
   transition: background-color 0.1s ease;
-  z-index: -1;
 `;
 
 const SwitchThumb = styled.div<{ checked: boolean }>`
@@ -45,7 +44,7 @@ const Label = styled.span`
 
 interface Props {
   checked: boolean;
-  onChange: (checked: boolean) => void;
+  onChange: () => void;
   disabled?: boolean;
   label?: string;
 }
@@ -53,7 +52,7 @@ interface Props {
 const Switch: FC<Props> = ({ checked, onChange, disabled = false, label }) => {
   const handleToggle = () => {
     if (!disabled) {
-      onChange(!checked);
+      onChange();
     }
   };
 
@@ -65,7 +64,7 @@ const Switch: FC<Props> = ({ checked, onChange, disabled = false, label }) => {
         onChange={handleToggle}
         disabled={disabled}
       />
-      <SwitchTrack checked={checked} onClick={handleToggle}>
+      <SwitchTrack checked={checked}>
         <SwitchThumb checked={checked} />
       </SwitchTrack>
       {label && <Label>{label}</Label>}
