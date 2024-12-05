@@ -11,3 +11,10 @@ type RecordOutput struct {
 	Date string `json:"date" db:"date"`
 	Description string `json:"description" db:"description"`
 }
+
+type NewRecord struct {
+	SubcategoryId int `json:"subcategoryId"`
+	Description string `json:"description"`
+	Price int `json:"price"`
+	Date int `json:"date"`
+}

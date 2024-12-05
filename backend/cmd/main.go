@@ -45,18 +45,21 @@ func main() {
 	authService := services.NewAuth(db, jwtService, passwordService)
 	categoryService := services.NewCategory(db)
 	subcategoryService := services.NewSubcategory(db)
-
+	recordService := services.NewRecordService(db)
 	validator := validator.New()
 
 	jwtMidlleware := middlewares.NewAuthMiddleware(jwtService)
 	authHandler := handlers.NewAuth(authService, validator)
 	categoryHandler := handlers.NewCategory(categoryService, householdService, validator)
 	subcategoryHandler := handlers.NewSubcategory(subcategoryService, householdService, validator)
+	recordHandler := handlers.NewRecord(recordService, householdService, validator)
 
 	router := mux.NewRouter()
 	routers.RegisterAuthRoutes(authHandler, router)
 	routers.RegisterCategoryRoutes(categoryHandler, router, jwtMidlleware)
 	routers.RegisterSubcategoryRoutes(subcategoryHandler, router, jwtMidlleware)
+	routers.RegisterRecordRoutes(recordHandler, router, jwtMidlleware)
+
 
 	log.Printf("Server started on 127.0.0.1:%s", cfg.Port)
 

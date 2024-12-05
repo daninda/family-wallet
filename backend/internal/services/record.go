@@ -9,17 +9,17 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type RecordService struct {
+type Record struct {
 	db *sqlx.DB
 }
 
-func NewRecordService(db *sqlx.DB) *RecordService {
-	return &RecordService{
+func NewRecordService(db *sqlx.DB) *Record {
+	return &Record{
 		db: db,
 	}
 }
 
-func (s *RecordService) GetAllFiltered(userId int, filter entities.Filter) ([]dto.RecordOutput, error) {
+func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.RecordOutput, error) {
 	minPrice := 0
 	maxPrice := 100000000
 	from := int64(0)
@@ -89,7 +89,7 @@ func (s *RecordService) GetAllFiltered(userId int, filter entities.Filter) ([]dt
 	return records, err
 }
 
-func (s *RecordService) Create(userId int, subcategoryId int, description string, price int, date int) (*entities.Record, error) {
+func (s *Record) Create(userId int, subcategoryId int, description string, price int, date int) (*entities.Record, error) {
 	row := s.db.QueryRow(`
 		INSERT INTO records (user_id, subcategory_id, description, price, date) 
 		VALUES ($1, $2, $3, $4, $5) 
@@ -114,12 +114,12 @@ func (s *RecordService) Create(userId int, subcategoryId int, description string
 	}, nil
 }
 
-func (r *RecordService) Update(id int, record *entities.Record) (*entities.Record, error) {
+func (r *Record) Update(user_id int, id int, record *dto.NewRecord) (*dto.NewRecord, error) {
 	row := r.db.QueryRow(
 		`UPDATE records SET description = $1, price = $2, date = $3 
-		 WHERE id = $4 
+		 WHERE id = $4 AND user_id = $5
 		 RETURNING id`, 
-		record.Description, record.Price, record.Date, id)
+		record.Description, record.Price, record.Date, id, user_id)
 
 	if err := row.Scan(); err != nil {
 		return nil, err
@@ -128,8 +128,8 @@ func (r *RecordService) Update(id int, record *entities.Record) (*entities.Recor
 	return record, nil
 }
 
-func (r *RecordService) Delete(id int) error {
-	_, err := r.db.Exec("DELETE FROM records WHERE id = $1", id)
+func (r *Record) Delete(userId,  id int) error {
+	_, err := r.db.Exec("DELETE FROM records WHERE id = $1 AND user_id = $2", id, userId)
 	if err != nil {
 		return err
 	}
