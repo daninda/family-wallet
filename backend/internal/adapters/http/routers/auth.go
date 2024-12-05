@@ -6,6 +6,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func RegisterRoutes(auth *handlers.Auth, router *mux.Router) {
+func RegisterAuthRoutes(auth *handlers.Auth, router *mux.Router) {
 	router.HandleFunc("/auth/register", auth.Register).Methods("POST")
 }

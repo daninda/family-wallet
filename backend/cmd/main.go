@@ -4,6 +4,7 @@ import (
 	"family-wallet/config"
 	"family-wallet/internal/adapters/http/handlers"
 	"family-wallet/internal/adapters/http/routers"
+	"family-wallet/internal/middlewares"
 	"family-wallet/internal/services"
 	"log"
 	"net/http"
@@ -12,6 +13,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/gorilla/mux"
+
+	"github.com/go-playground/validator/v10"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -38,11 +41,19 @@ func main() {
 
 	jwtService := services.NewJwt(cfg.Secret, cfg.Expiration)
 	passwordService := services.NewPassword()
+	householdService := services.NewHousehold(db)
 	authService := services.NewAuth(db, jwtService, passwordService)
-	authHandler := handlers.NewAuth(authService)
+	categoryService := services.NewCategory(db)
+
+	validator := validator.New()
+
+	jwtMidlleware := middlewares.NewAuthMiddleware(jwtService)
+	authHandler := handlers.NewAuth(authService, validator)
+	categoryHandler := handlers.NewCategory(categoryService, householdService, validator)
 
 	router := mux.NewRouter()
-	routers.RegisterRoutes(authHandler, router)
+	routers.RegisterAuthRoutes(authHandler, router)
+	routers.RegisterCategoryRoutes(categoryHandler, router, jwtMidlleware)
 
 	log.Printf("Server started on 127.0.0.1:%s", cfg.Port)
 

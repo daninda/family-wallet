@@ -20,8 +20,6 @@ func NewRecordService(db *sqlx.DB) *RecordService {
 }
 
 func (s *RecordService) GetAllFiltered(userId int, filter entities.Filter) ([]dto.RecordOutput, error) {
-
-	
 	minPrice := 0
 	maxPrice := 100000000
 	from := int64(0)
@@ -91,12 +89,12 @@ func (s *RecordService) GetAllFiltered(userId int, filter entities.Filter) ([]dt
 	return records, err
 }
 
-func (s *RecordService) Create(user_id int, subcategoryId int, description string, price int, date int) (*entities.Record, error) {
+func (s *RecordService) Create(userId int, subcategoryId int, description string, price int, date int) (*entities.Record, error) {
 	row := s.db.QueryRow(`
 		INSERT INTO records (user_id, subcategory_id, description, price, date) 
 		VALUES ($1, $2, $3, $4, $5) 
 		RETURNING id
-	`, user_id, subcategoryId, description, price, date);
+	`, userId, subcategoryId, description, price, date);
 	
 	var id int
 	if err := row.Scan(&id); err != nil {
@@ -108,7 +106,7 @@ func (s *RecordService) Create(user_id int, subcategoryId int, description strin
 
 	return &entities.Record{
 		Id: id,
-		UserId: user_id,
+		UserId: userId,
 		SubcategoryId: subcategoryId,
 		Price: price,
 		Date: dateString,

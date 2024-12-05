@@ -15,8 +15,8 @@ type Auth struct {
 	Validator *validator.Validate
 }
 
-func NewAuth(auth *services.Auth) *Auth {
-	return &Auth{auth: auth, Validator: validator.New()}
+func NewAuth(auth *services.Auth, validator *validator.Validate) *Auth {
+	return &Auth{auth: auth, Validator: validator}
 }
 
 func (a *Auth) Register(w http.ResponseWriter, r *http.Request) {
