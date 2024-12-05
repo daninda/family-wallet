@@ -36,22 +36,26 @@ func (c *Category) New(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "User not found", http.StatusTeapot)
+		return
 	}
 
 	head_id, err := c.household.GetHouseholdHead(household.Id)
 
 	if err != nil {
 		http.Error(w, "Household head not found", http.StatusTeapot)
+		return
 	}
 
 	if *head_id != userId {
 		http.Error(w, "Permission denied", http.StatusUnauthorized)
+		return
 	}
 
 	newCategory, err := c.category.Create(household.Id, body.Name)
 
 	if err != nil {
 		http.Error(w, "Bad bad category", http.StatusConflict)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -65,12 +69,14 @@ func (c *Category) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "User not found", http.StatusTeapot)
+		return
 	}
 
 	categories, err := c.category.GetAll(household.Id)
 
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -84,26 +90,31 @@ func (c *Category) Delete(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "User not found", http.StatusTeapot)
+		return
 	}
 
 	if !isAdmin {
 		http.Error(w, "Permission denied", http.StatusUnauthorized)
+		return
 	}
 
 	id := r.URL.Query().Get("id")
 
 	if id == "" {
 		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
 	}
 
 	categoryId, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
 	}
 	err = c.category.Delete(categoryId)
 
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -116,10 +127,12 @@ func (c *Category) Update(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "User not found", http.StatusTeapot)
+		return
 	}
 
 	if !isAdmin {
 		http.Error(w, "Permission denied", http.StatusUnauthorized)
+		return
 	}
 
 	var body *dto.NewCategory
@@ -134,17 +147,20 @@ func (c *Category) Update(w http.ResponseWriter, r *http.Request) {
 
 	if id == "" {
 		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
 	}
 
 	categoryId, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
 	}
 
 	err = c.category.Update(categoryId, body.Name)
 
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)

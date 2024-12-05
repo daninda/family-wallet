@@ -58,3 +58,15 @@ func (s *Household) GetHouseholdHead(household_id int) (*int, error) {
 	return &id, nil
 }
 
+func (s *Household) HasCategory(household_id int, category_id int) (bool, error) {
+	row := s.db.QueryRow(`SELECT id FROM categories WHERE household_id = $1 AND id = $2`, household_id, category_id)
+
+	var id int
+	err := row.Scan(&id)
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
