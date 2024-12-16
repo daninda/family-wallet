@@ -8,7 +8,7 @@ import Authorization from '../pages/authorization';
 import Home from '../pages/home/Home';
 
 const Router: FC = () => {
-  const isAuth = false;
+  const isAuth = true;
   const isLoading = false;
 
   if (isLoading) {

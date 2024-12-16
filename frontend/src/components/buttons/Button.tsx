@@ -3,8 +3,9 @@ import { FC } from 'react';
 
 const StyledButton = styled.button<{
   disabled: boolean;
-  isRed: boolean;
-  isWide: boolean;
+  height: 'small' | 'medium' | 'large';
+  color: 'green' | 'yellow' | 'red' | 'white';
+  width?: 'content' | 'medium' | 'wide';
 }>`
   display: flex;
   align-items: center;
@@ -12,14 +13,30 @@ const StyledButton = styled.button<{
   padding: 12px;
   font-size: 14px;
   font-weight: 600;
-  color: ${({ disabled, theme }) =>
-    disabled ? '#fff' : theme.colors.background};
-  background-color: ${({ disabled, isRed, theme }) =>
-    disabled ? '#0070f3' : isRed ? theme.colors.error : theme.colors.primary};
-  border: none;
+  color: ${({ disabled, color, theme }) =>
+    disabled
+      ? theme.colors.divider
+      : color === 'yellow' || color === 'white'
+        ? theme.colors.primaryText
+        : theme.colors.background};
+  background-color: ${({ disabled, color, theme }) =>
+    disabled
+      ? theme.colors.divider
+      : color === 'red'
+        ? theme.colors.error
+        : color === 'yellow'
+          ? theme.colors.accent
+          : color === 'white'
+            ? theme.colors.background
+            : theme.colors.primary};
+  border: ${({ color, theme }) =>
+    color === 'white' ? '1px solid ' + theme.colors.divider : 'none'};
   border-radius: 4px;
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-  width: ${({ isWide }) => (isWide ? '100%' : 'auto')};
+  width: ${({ width }) =>
+    width === 'content' ? 'auto' : width === 'medium' ? '240px' : '100%'};
+  height: ${({ height }) =>
+    height === 'small' ? '32px' : height === 'medium' ? '36px' : '40px'};
 `;
 
 interface Props {
@@ -27,22 +44,26 @@ interface Props {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   title?: string;
   isRed?: boolean;
-  isWide?: boolean;
+  height?: 'small' | 'medium' | 'large';
+  color?: 'green' | 'yellow' | 'red' | 'white';
+  width?: 'content' | 'medium' | 'wide';
 }
 
 const Button: FC<Props> = ({
   disabled = false,
   title,
   onClick,
-  isRed = false,
-  isWide = false,
+  width = 'content',
+  height = 'medium',
+  color = 'green',
 }) => {
   return (
     <StyledButton
       onClick={onClick}
       disabled={disabled}
-      isRed={isRed}
-      isWide={isWide}
+      height={height}
+      color={color}
+      width={width}
     >
       {title}
     </StyledButton>

@@ -19,10 +19,15 @@ const Error = styled.span`
   color: ${({ theme }) => theme.colors.error};
 `;
 
-const StyledInput = styled.input<{ hasError?: boolean; isDisabled?: boolean }>`
+const StyledInput = styled.input<{
+  hasError?: boolean;
+  isDisabled?: boolean;
+  height?: 'small' | 'medium';
+}>`
   background-color: ${({ isDisabled, theme }) =>
     isDisabled ? theme.colors.secondaryGrey : theme.colors.background};
-  padding: 12px;
+  height: ${({ height }) => (height === 'small' ? '32px' : '40px')};
+  padding: 0 12px;
   border: 1px solid
     ${({ hasError, theme }) =>
       hasError ? theme.colors.error : theme.colors.divider};
@@ -36,14 +41,15 @@ const StyledInput = styled.input<{ hasError?: boolean; isDisabled?: boolean }>`
 `;
 
 interface Props {
-  type: string;
-  label: string;
+  type?: string;
+  label?: string;
   error?: string;
   placeholder?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isWide?: boolean;
   isDisabled?: boolean;
+  height?: 'small' | 'medium';
 }
 
 const Input: FC<Props> = ({
@@ -55,6 +61,7 @@ const Input: FC<Props> = ({
   onChange,
   isWide = false,
   isDisabled = false,
+  height = 'medium',
 }) => {
   return (
     <Wrapper isWide={isWide}>
@@ -67,6 +74,7 @@ const Input: FC<Props> = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        height={height}
       />
       {error && <Error>{error}</Error>}
     </Wrapper>

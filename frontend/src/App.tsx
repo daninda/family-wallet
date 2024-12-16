@@ -3,13 +3,16 @@ import { BrowserRouter } from 'react-router-dom';
 import Router from './routers/Router';
 import { ThemeProvider } from '@emotion/react';
 import { main } from './themes';
+import GlobalStyles from './themes/global';
 
 const App: FC = () => {
   return (
     <ThemeProvider theme={main}>
-      <BrowserRouter>
-        <Router />
-      </BrowserRouter>
+      <GlobalStyles>
+        <BrowserRouter>
+          <Router />
+        </BrowserRouter>
+      </GlobalStyles>
     </ThemeProvider>
   );
 };
