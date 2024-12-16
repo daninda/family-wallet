@@ -5,7 +5,7 @@ import Header from '../components/headers/Header';
 const Main: FC = () => {
   return (
     <div>
-      <Header />
+      <Header username="Danila" />
       <main>
         <Outlet />
       </main>

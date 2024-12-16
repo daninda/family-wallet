@@ -1,19 +1,20 @@
 import { FC, useState } from 'react';
+import { AiOutlineDown } from 'react-icons/ai';
 import styled from '@emotion/styled';
 
 const DropdownButton = styled.button`
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding: 12px;
   font-size: 14px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.primaryText};
+  font-weight: 400;
   background-color: ${({ theme }) => theme.colors.background};
   border: 1px solid ${({ theme }) => theme.colors.divider};
   border-radius: 4px;
   cursor: pointer;
   width: 280px;
+  height: 40px;
 `;
 
 const DropdownMenu = styled.div`
@@ -41,6 +42,13 @@ const DropdownItem = styled.div`
 const DropdownContainer = styled.div`
   position: relative;
   display: inline-block;
+`;
+
+const DropdownIcon = styled.span`
+  color: ${({ theme }) => theme.colors.divider};
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
 `;
 
 interface Item {
@@ -77,6 +85,9 @@ const Dropdown: FC<Props> = ({ items = [], onSelect, placeholder }) => {
     <DropdownContainer>
       <DropdownButton onClick={toggleDropdown}>
         {selectedItem.name}
+        <DropdownIcon>
+          <AiOutlineDown />
+        </DropdownIcon>
       </DropdownButton>
       {isOpen && (
         <DropdownMenu>
