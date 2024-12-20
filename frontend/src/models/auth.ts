@@ -5,13 +5,13 @@ export interface User {
   accepted: boolean;
   isAdmin: boolean;
   householdId: number;
+  limitation: number;
 }
 
 export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
-  accepted: boolean;
   isAdmin: boolean;
   householdId: number;
 }

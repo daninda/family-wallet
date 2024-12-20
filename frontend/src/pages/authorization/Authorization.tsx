@@ -66,7 +66,7 @@ const Authorization: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button isWide onClick={() => {}} title="Войти" />
+          <Button width="wide" onClick={() => {}} title="Войти" />
           <Link
             to="/signup"
             description="Еще нет аккаунта?"

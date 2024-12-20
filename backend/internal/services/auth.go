@@ -58,7 +58,7 @@ func (a *Auth) Register(
 		Name:         input.Name,
 		Email:        input.Email,
 		PasswordHash: passwordHash,
-		Accepted:     input.Accepted,
+		Accepted:     false,
 		IsAdmin:      input.IsAdmin,
 		Limitation:   nil,
 		HouseholdId:  household.Id,
@@ -105,4 +105,18 @@ func (a *Auth) Login(input *dto.LoginInput) (*dto.LoginOutput, error) {
 	}
 
 	return &dto.LoginOutput{User: dto.UserOutput{Id: user.Id, Name: user.Name, Email: user.Email, Accepted: user.Accepted, IsAdmin: user.IsAdmin, HouseholdId: user.HouseholdId}, Token: token}, nil
+}
+
+func (a *Auth) GetUser(id int) (*dto.UserOutput, error) {
+	row := a.db.QueryRowx(`
+		SELECT * FROM users WHERE id = $1
+	`, id)
+
+	var user entities.User
+
+	if err := row.Scan(&user); err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	return &dto.UserOutput{Id: user.Id, Name: user.Name, Email: user.Email, Accepted: user.Accepted, IsAdmin: user.IsAdmin, HouseholdId: user.HouseholdId}, nil
 }

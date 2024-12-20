@@ -4,6 +4,7 @@ import Input from '../../components/inputs/Input';
 import Switch from '../../components/switches/Switch';
 import Button from '../../components/buttons/Button';
 import Link from '../../components/links/Link';
+import Auth from '../../services/auth';
 
 const PageContainer = styled.div`
   display: flex;
@@ -49,6 +50,20 @@ const Registration: React.FC = () => {
   const [familyCode, setFamilyCode] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const handleRegister = () => {
+    Auth.register({
+      name,
+      email,
+      password,
+      isAdmin,
+      householdId: Number.parseInt(familyCode),
+    }).then((res) => {
+      localStorage.setItem('token', res.token);
+      localStorage.setItem('user', JSON.stringify(res.user));
+      window.location.reload();
+    });
+  };
+
   return (
     <PageContainer>
       <FormContainer>
@@ -92,7 +107,13 @@ const Registration: React.FC = () => {
             value={familyCode}
             onChange={(e) => setFamilyCode(e.target.value)}
           />
-          <Button isWide onClick={() => {}} title="Зарегистрироваться" />
+          <Button
+            width="wide"
+            onClick={() => {
+              handleRegister();
+            }}
+            title="Зарегистрироваться"
+          />
           <Link to="/signin" description="Уже есть аккаунт?" text="Войти" />
         </AnotherContainer>
       </FormContainer>

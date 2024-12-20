@@ -10,11 +10,13 @@ import Members from '../pages/members/Members';
 import Categories from '../pages/categories/Categories';
 import Statistics from '../pages/statistics/Statistics';
 
-const Router: FC = () => {
-  const isAuth = true;
-  const isAdmin = true;
-  const isLoading = false;
+interface Props {
+  isAuth: boolean;
+  isAdmin: boolean;
+  isLoading: boolean;
+}
 
+const Router: FC<Props> = ({ isAdmin, isAuth, isLoading }) => {
   if (isLoading) {
     return <Loader />;
   } else if (!isAuth) {

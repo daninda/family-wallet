@@ -11,8 +11,9 @@ import (
 )
 
 type Auth struct {
-	auth      *services.Auth
-	Validator *validator.Validate
+	auth       *services.Auth
+	Validator  *validator.Validate
+	jwtService *services.Jwt
 }
 
 func NewAuth(auth *services.Auth, validator *validator.Validate) *Auth {
@@ -50,5 +51,58 @@ func (a *Auth) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(res)
+}
+
+func (a *Auth) Login(w http.ResponseWriter, r *http.Request) {
+	var body *dto.LoginInput
+
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		http.Error(w, "Could not decode body", http.StatusBadRequest)
+		return
+	}
+
+	if err := a.Validator.Struct(body); err != nil {
+		var validationErrors []string
+		for _, fieldError := range err.(validator.ValidationErrors) {
+			validationErrors = append(validationErrors, fieldError.Error())
+		}
+		log.Println(validationErrors)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"errors": validationErrors,
+		})
+		return
+	}
+
+	res, err := a.auth.Login(body)
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
+}
+
+func (a *Auth) CheckToken(w http.ResponseWriter, r *http.Request) {
+	token := w.Header().Get("Authorization")
+
+	id, err := a.jwtService.ValidateToken(token)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	res, err := a.auth.GetUser(id)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
 }

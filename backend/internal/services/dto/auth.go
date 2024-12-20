@@ -4,7 +4,6 @@ type RegisterInput struct {
 	Name        string `json:"name"`
 	Email       string `json:"email"`
 	Password    string `json:"password"`
-	Accepted    bool   `json:"accepted"`
 	IsAdmin     bool   `json:"isAdmin"`
 	HouseholdId int    `json:"householdId"`
 }
@@ -21,6 +20,7 @@ type UserOutput struct {
 	Accepted    bool   `json:"accepted"`
 	IsAdmin     bool   `json:"isAdmin"`
 	HouseholdId int    `json:"householdId"`
+	Limitation  int    `json:"limitation"`
 }
 
 type LoginInput struct {
