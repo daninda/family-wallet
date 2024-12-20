@@ -13,7 +13,7 @@ const DropdownButton = styled.button`
   border: 1px solid ${({ theme }) => theme.colors.divider};
   border-radius: 4px;
   cursor: pointer;
-  width: 280px;
+  width: 100%;
   height: 40px;
 `;
 
@@ -25,7 +25,7 @@ const DropdownMenu = styled.div`
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   margin-top: 8px;
-  min-width: 280px;
+  min-width: 100%;
   z-index: 10;
 `;
 
@@ -39,9 +39,15 @@ const DropdownItem = styled.div`
   }
 `;
 
-const DropdownContainer = styled.div`
+const DropdownContainer = styled.div<{ width?: 'content' | 'medium' | 'wide' }>`
   position: relative;
   display: inline-block;
+  width: ${({ width }) =>
+    width === 'content'
+      ? 'min-content'
+      : width === 'medium'
+        ? '280px'
+        : '100%'};
 `;
 
 const DropdownIcon = styled.span`
@@ -60,9 +66,15 @@ interface Props {
   items: Item[];
   onSelect?: (item: Item) => void;
   placeholder?: string;
+  width?: 'content' | 'medium' | 'wide';
 }
 
-const Dropdown: FC<Props> = ({ items = [], onSelect, placeholder }) => {
+const Dropdown: FC<Props> = ({
+  items = [],
+  onSelect,
+  placeholder,
+  width = 'medium',
+}) => {
   const placeholderItem: Item = {
     id: -1,
     name: placeholder || 'Выберите',
@@ -82,7 +94,7 @@ const Dropdown: FC<Props> = ({ items = [], onSelect, placeholder }) => {
   };
 
   return (
-    <DropdownContainer>
+    <DropdownContainer width={width}>
       <DropdownButton onClick={toggleDropdown}>
         {selectedItem.name}
         <DropdownIcon>

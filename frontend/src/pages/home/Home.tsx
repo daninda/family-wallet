@@ -1,13 +1,16 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Wrapper } from '../../components/wrappers/Wrapper';
 import CategorySelector from '../../components/categorySelector/CategorySelector';
 import styled from '@emotion/styled';
 import Button from '../../components/buttons/Button';
 import Dropdown from '../../components/dropdowns/Dropdown';
 import Input from '../../components/inputs/Input';
+import { useNavigate } from 'react-router-dom';
+import Modal from '../../components/modals/Modal';
 
 const PageWrapper = styled.div`
-  margin-top: 38px;
+  padding-top: 38px;
+  padding-bottom: 32px;
 `;
 
 const Title = styled.h1`
@@ -135,7 +138,20 @@ const ExpenseGroupItemDate = styled.p`
   font-weight: 400;
 `;
 
+const ExpenseAlert = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  margin: 32px 0;
+  background-color: ${({ theme }) => theme.colors.accent};
+  font-size: 24px;
+  font-weight: 600;
+`;
+
 const Home: FC = () => {
+  const navigate = useNavigate();
+
   const categories = [
     {
       id: 1,
@@ -144,6 +160,17 @@ const Home: FC = () => {
     {
       id: 2,
       name: 'Category 2',
+    },
+  ];
+
+  const subcategories = [
+    {
+      id: 1,
+      name: 'Subcategory 1',
+    },
+    {
+      id: 2,
+      name: 'Subcategory 2',
     },
   ];
 
@@ -166,9 +193,23 @@ const Home: FC = () => {
     },
   ];
 
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newExpense, setNewExpense] = useState({
+    category: '',
+    subcategory: '',
+    description: '',
+    cost: 0,
+    date: '',
+  });
+
+  const handleAddExpense = () => {
+    console.log(newExpense);
+  };
+
   return (
     <Wrapper>
       <PageWrapper>
+        <ExpenseAlert>Ваш лимит трат превышен: 25 000 / 20 000</ExpenseAlert>
         <CategorySelector categories={categories} onSelect={() => {}} />
         <Title>Все траты</Title>
         <Tools>
@@ -179,8 +220,14 @@ const Home: FC = () => {
               width="medium"
               color="white"
               title="Статистика"
+              onClick={() => navigate('/statistics')}
             />
-            <Button height="large" width="medium" title="Добавить трату" />
+            <Button
+              height="large"
+              width="medium"
+              title="Добавить трату"
+              onClick={() => setIsAddModalOpen(true)}
+            />
           </Buttons>
         </Tools>
         <MainWrapper>
@@ -290,6 +337,93 @@ const Home: FC = () => {
             </Filters>
           </FiltersWrapper>
         </MainWrapper>
+        {isAddModalOpen && (
+          <Modal onClose={() => setIsAddModalOpen(false)}>
+            <h2>Добавить трату</h2>
+            <form>
+              <div>
+                <Dropdown
+                  items={categories}
+                  placeholder="Категория"
+                  width="wide"
+                  onSelect={(category) =>
+                    setNewExpense({ ...newExpense, category: category.name })
+                  }
+                />
+              </div>
+              <div>
+                <Dropdown
+                  items={subcategories}
+                  placeholder="Подкатегория"
+                  width="wide"
+                  onSelect={(category) =>
+                    setNewExpense({ ...newExpense, subcategory: category.name })
+                  }
+                />
+              </div>
+              <div>
+                <Input
+                  placeholder="Описание"
+                  type="text"
+                  height="medium"
+                  isWide
+                  onChange={(e) =>
+                    setNewExpense({
+                      ...newExpense,
+                      description: e.target.value,
+                    })
+                  }
+                  value={newExpense.description}
+                />
+              </div>
+              <div>
+                <Input
+                  placeholder="Стоимость"
+                  type="number"
+                  height="medium"
+                  isWide
+                  onChange={(e) =>
+                    setNewExpense({
+                      ...newExpense,
+                      cost: Number.parseInt(e.target.value),
+                    })
+                  }
+                  value={newExpense.cost.toString()}
+                />
+              </div>
+              <div>
+                <Input
+                  placeholder="Дата"
+                  type="date"
+                  height="medium"
+                  isWide
+                  onChange={(e) =>
+                    setNewExpense({
+                      ...newExpense,
+                      date: e.target.value,
+                    })
+                  }
+                  value={newExpense.date}
+                />
+              </div>
+              <Buttons>
+                <Button
+                  height="small"
+                  width="content"
+                  title="Готово"
+                  onClick={handleAddExpense}
+                />
+                <Button
+                  height="small"
+                  width="content"
+                  color="red"
+                  title="Отмена"
+                  onClick={() => setIsAddModalOpen(false)}
+                />
+              </Buttons>
+            </form>
+          </Modal>
+        )}
       </PageWrapper>
     </Wrapper>
   );

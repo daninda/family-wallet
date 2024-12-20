@@ -13,7 +13,8 @@ const HeaderWrapper = styled.header`
 `;
 
 const BorderWrapper = styled.div`
-  border-bottom: 1px solid ${({ theme }) => theme.colors.divider};
+  outline: 1px solid ${({ theme }) => theme.colors.divider};
+  height: 100%;
 `;
 
 const Title = styled.h1`
