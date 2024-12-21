@@ -16,8 +16,8 @@ type Auth struct {
 	jwtService *services.Jwt
 }
 
-func NewAuth(auth *services.Auth, validator *validator.Validate) *Auth {
-	return &Auth{auth: auth, Validator: validator}
+func NewAuth(auth *services.Auth, validator *validator.Validate, jwt *services.Jwt) *Auth {
+	return &Auth{auth: auth, Validator: validator, jwtService: jwt}
 }
 
 func (a *Auth) Register(w http.ResponseWriter, r *http.Request) {
@@ -89,16 +89,20 @@ func (a *Auth) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Auth) CheckToken(w http.ResponseWriter, r *http.Request) {
-	token := w.Header().Get("Authorization")
+	
+	token := r.Header.Get("Authorization")
 
 	id, err := a.jwtService.ValidateToken(token)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	res, err := a.auth.GetUser(id)
 	if err != nil {
+		print("bad bad user " )
+		println( err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}

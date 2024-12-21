@@ -7,38 +7,38 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 
 export default tseslint.config({
-  extends: [
-    js.configs.recommended,
-    ...tseslint.configs.recommended,
-    prettierConfig,
-  ],
-  ignores: ['node_modules/**', 'dist/**'],
-  languageOptions: {
-    ecmaVersion: 2020,
-    globals: globals.browser,
-  },
-  plugins: {
-    'react-hooks': reactHooks,
-    'react-refresh': reactRefresh,
-    prettier: prettierPlugin,
-  },
-  rules: {
-    ...reactHooks.configs.recommended.rules,
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
+    extends: [
+        js.configs.recommended,
+        ...tseslint.configs.recommended,
+        prettierConfig,
     ],
-    'prettier/prettier': [
-      'error',
-      {
-        semi: true,
-        singleQuote: true,
-        trailingComma: 'es5',
-        tabWidth: 2,
-        useTabs: false,
-        printWidth: 80,
-        arrowParens: 'always',
-      },
-    ],
-  },
+    ignores: ['node_modules/**', 'dist/**'],
+    languageOptions: {
+        ecmaVersion: 2020,
+        globals: globals.browser,
+    },
+    plugins: {
+        'react-hooks': reactHooks,
+        'react-refresh': reactRefresh,
+        prettier: prettierPlugin,
+    },
+    rules: {
+        ...reactHooks.configs.recommended.rules,
+        'react-refresh/only-export-components': [
+            'warn',
+            { allowConstantExport: true },
+        ],
+        'prettier/prettier': [
+            'error',
+            {
+                semi: true,
+                singleQuote: true,
+                trailingComma: 'es5',
+                tabWidth: 4,
+                useTabs: false,
+                printWidth: 80,
+                arrowParens: 'always',
+            },
+        ],
+    },
 });
