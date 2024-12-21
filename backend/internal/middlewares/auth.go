@@ -20,6 +20,7 @@ func NewAuthMiddleware(jwtService *services.Jwt) *Auth {
 
 func (middleware *Auth) Middleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		print("hehe")
 		token := w.Header().Get("Authorization")
 		
 		id, err := middleware.jwtService.ValidateToken(token)

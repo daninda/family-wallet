@@ -1,6 +1,7 @@
 package services
 
 import (
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -25,30 +26,44 @@ func (j *Jwt) GenerateToken(userId int) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(j.secret))
+	tokenText, err :=  token.SignedString([]byte(j.secret))
+	log.Println("generating")
+	log.Println(tokenText);
+	log.Println(err);
+	res, err := j.ValidateToken(tokenText);
+
+	log.Println("validating:")
+	log.Println(res)
+	log.Println(err)
+	return tokenText, err
 }
 
 func (j *Jwt) ValidateToken(tokenString string) (int, error) {
+	
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
 		}
-		return j.secret, nil
+
+		return []byte(j.secret), nil
 	})
 
 	if err != nil || !token.Valid {
+		println("token validity error")
 		return 0, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
+		println("claims error")
 		return 0, jwt.ErrSignatureInvalid
 	}
-
-	userId, ok := claims["user_id"].(int)
+	
+	userId, ok := claims["user_id"].(float64)
 	if !ok {
+		println("user_id error")
 		return 0, jwt.ErrSignatureInvalid
 	}
 
-	return userId, nil
+	return int(userId), nil
 }
