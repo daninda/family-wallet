@@ -1,18 +1,18 @@
 export interface Category {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
 }
 
 export type GetAllCategoriesResponse = Category[];
 
 export interface GetOneCategoryRequest {
-  id: number;
+    id: number;
 }
 
 export type GetOneCategoryResponse = Category;
 
 export interface CreateCategoryRequest {
-  name: string;
+    name: string;
 }
 
 export type CreateCategoryResponse = Category;

@@ -11,41 +11,44 @@ import Categories from '../pages/categories/Categories';
 import Statistics from '../pages/statistics/Statistics';
 
 interface Props {
-  isAuth: boolean;
-  isAdmin: boolean;
-  isLoading: boolean;
+    isAuth: boolean;
+    isAdmin: boolean;
+    isLoading: boolean;
 }
 
 const Router: FC<Props> = ({ isAdmin, isAuth, isLoading }) => {
-  if (isLoading) {
-    return <Loader />;
-  } else if (!isAuth) {
-    return (
-      <Routes>
-        <Route element={<Auth />}>
-          <Route path="/signup" element={<Registration />} />
-          <Route path="/signin" element={<Authorization />} />
-          <Route path="*" element={<Navigate to="/signin" />} />
-        </Route>
-      </Routes>
-    );
-  } else {
-    return (
-      <Routes>
-        <Route element={<Main />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/statistics" element={<Statistics />} />
-          {isAdmin && (
-            <>
-              <Route path="/members" element={<Members />} />
-              <Route path="/categories" element={<Categories />} />
-            </>
-          )}
-        </Route>
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    );
-  }
+    if (isLoading) {
+        return <Loader />;
+    } else if (!isAuth) {
+        return (
+            <Routes>
+                <Route element={<Auth />}>
+                    <Route path="/signup" element={<Registration />} />
+                    <Route path="/signin" element={<Authorization />} />
+                    <Route path="*" element={<Navigate to="/signin" />} />
+                </Route>
+            </Routes>
+        );
+    } else {
+        return (
+            <Routes>
+                <Route element={<Main />}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/statistics" element={<Statistics />} />
+                    {isAdmin && (
+                        <>
+                            <Route path="/members" element={<Members />} />
+                            <Route
+                                path="/categories"
+                                element={<Categories />}
+                            />
+                        </>
+                    )}
+                </Route>
+                <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+        );
+    }
 };
 
 export default Router;
