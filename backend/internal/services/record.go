@@ -25,7 +25,6 @@ func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.Recor
 	from := int64(0)
 	var to int64 = math.MaxInt64
 
-	
 	if filter.MinPrice != nil {
 		minPrice = *filter.MinPrice
 	}
@@ -42,7 +41,7 @@ func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.Recor
 		to = *filter.To
 	}
 
-	params := []any {userId, minPrice, maxPrice, from, to}
+	params := []any{userId, minPrice, maxPrice, from, to}
 
 	query := ""
 	if filter.SubcategoryId != nil {
@@ -52,7 +51,6 @@ func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.Recor
 		params = append(params, *filter.CategoryId)
 		query += " AND records.category_id = $6"
 	}
-
 
 	rows, err := s.db.DB.Query(`
 		SELECT 
@@ -68,7 +66,7 @@ func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.Recor
 		FROM records 
 		JOIN categories ON records.category_id = categories.id 
 		JOIN subcategories ON records.subcategory_id = subcategories.id 
-		WHERE records.user_id = $1 AND price >= $2 AND price <= $3 AND date >= $4 AND date <= $5` + query, 
+		WHERE records.user_id = $1 AND price >= $2 AND price <= $3 AND date >= $4 AND date <= $5`+query,
 		params...)
 
 	if err != nil {
@@ -94,8 +92,8 @@ func (s *Record) Create(userId int, subcategoryId int, description string, price
 		INSERT INTO records (user_id, subcategory_id, description, price, date) 
 		VALUES ($1, $2, $3, $4, $5) 
 		RETURNING id
-	`, userId, subcategoryId, description, price, date);
-	
+	`, userId, subcategoryId, description, price, date)
+
 	var id int
 	if err := row.Scan(&id); err != nil {
 		return nil, err
@@ -105,12 +103,12 @@ func (s *Record) Create(userId int, subcategoryId int, description string, price
 	dateString := t.Format(time.DateTime)
 
 	return &entities.Record{
-		Id: id,
-		UserId: userId,
+		Id:            id,
+		UserId:        userId,
 		SubcategoryId: subcategoryId,
-		Price: price,
-		Date: dateString,
-		Description: description,
+		Price:         price,
+		Date:          dateString,
+		Description:   description,
 	}, nil
 }
 
@@ -118,7 +116,7 @@ func (r *Record) Update(user_id int, id int, record *dto.NewRecord) (*dto.NewRec
 	row := r.db.QueryRow(
 		`UPDATE records SET description = $1, price = $2, date = $3 
 		 WHERE id = $4 AND user_id = $5
-		 RETURNING id`, 
+		 RETURNING id`,
 		record.Description, record.Price, record.Date, id, user_id)
 
 	if err := row.Scan(); err != nil {
@@ -128,7 +126,7 @@ func (r *Record) Update(user_id int, id int, record *dto.NewRecord) (*dto.NewRec
 	return record, nil
 }
 
-func (r *Record) Delete(userId,  id int) error {
+func (r *Record) Delete(userId, id int) error {
 	_, err := r.db.Exec("DELETE FROM records WHERE id = $1 AND user_id = $2", id, userId)
 	if err != nil {
 		return err

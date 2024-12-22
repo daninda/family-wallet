@@ -39,7 +39,6 @@ func main() {
 		log.Printf("Could not run migrations: %v", err)
 	}
 
-	print("cfg secret" + cfg.Secret)
 	jwtService := services.NewJwt(cfg.Secret, cfg.Expiration)
 	passwordService := services.NewPassword()
 	householdService := services.NewHousehold(db)
@@ -56,12 +55,11 @@ func main() {
 	recordHandler := handlers.NewRecord(recordService, householdService, validator)
 
 	router := mux.NewRouter()
-	
+
 	routers.RegisterAuthRoutes(authHandler, router.PathPrefix("/auth").Subrouter())
 	routers.RegisterCategoryRoutes(categoryHandler, router.PathPrefix("/category").Subrouter(), jwtMidlleware)
 	routers.RegisterSubcategoryRoutes(subcategoryHandler, router.PathPrefix("/category").Subrouter(), jwtMidlleware)
 	routers.RegisterRecordRoutes(recordHandler, router.PathPrefix("/record").Subrouter(), jwtMidlleware)
-
 
 	log.Printf("Server started on 127.0.0.1:%s", cfg.Port)
 

@@ -45,7 +45,7 @@ func (a *Auth) Register(w http.ResponseWriter, r *http.Request) {
 	res, err := a.auth.Register(body)
 
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -79,7 +79,7 @@ func (a *Auth) Login(w http.ResponseWriter, r *http.Request) {
 	res, err := a.auth.Login(body)
 
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -89,20 +89,21 @@ func (a *Auth) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Auth) CheckToken(w http.ResponseWriter, r *http.Request) {
-	
+
 	token := r.Header.Get("Authorization")
+
+	token = token[7:]
 
 	id, err := a.jwtService.ValidateToken(token)
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	res, err := a.auth.GetUser(id)
 	if err != nil {
-		print("bad bad user " )
-		println( err)
+		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}

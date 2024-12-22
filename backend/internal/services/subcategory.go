@@ -7,7 +7,7 @@ import (
 )
 
 type Subcategory struct {
-	db *sqlx.DB	
+	db *sqlx.DB
 }
 
 func NewSubcategory(db *sqlx.DB) *Subcategory {
@@ -19,7 +19,6 @@ func NewSubcategory(db *sqlx.DB) *Subcategory {
 func (s *Subcategory) GetAll(categoryId int) ([]entities.Subcategory, error) {
 	var subcategories []entities.Subcategory
 	err := s.db.Select(&subcategories, "SELECT id, name, category_id FROM subcategories WHERE category_id = $1", categoryId)
-
 
 	return subcategories, err
 }

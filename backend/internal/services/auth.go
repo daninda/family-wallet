@@ -27,7 +27,7 @@ func (a *Auth) Register(
 
 	var existsId int
 
-	if err := row.Scan(&existsId); err == nil {
+	if err := row.StructScan(&existsId); err == nil {
 		return nil, errors.New("user already exists")
 	}
 
@@ -38,7 +38,7 @@ func (a *Auth) Register(
 			INSERT INTO households (id) VALUES (DEFAULT) RETURNING *
 		`)
 
-		if err := row.Scan(&household.Id); err != nil {
+		if err := row.StructScan(&household.Id); err != nil {
 			return nil, errors.New("could not create household")
 		}
 	} else {
@@ -46,7 +46,7 @@ func (a *Auth) Register(
 			SELECT * FROM households WHERE id = $1 RETURNING *
 		`, input.HouseholdId)
 
-		if err := row.Scan(&household); err != nil {
+		if err := row.StructScan(&household); err != nil {
 			return nil, errors.New("could not find household")
 		}
 	}
@@ -70,7 +70,7 @@ func (a *Auth) Register(
 	`, user.Name, user.Email, user.PasswordHash, user.IsAdmin, user.Accepted, user.HouseholdId,
 	)
 
-	if err := row.Scan(&user.Id); err != nil {
+	if err := row.StructScan(&user.Id); err != nil {
 		return nil, errors.New("could not create user")
 	}
 
@@ -90,7 +90,7 @@ func (a *Auth) Login(input *dto.LoginInput) (*dto.LoginOutput, error) {
 
 	var user entities.User
 
-	if err := row.Scan(&user); err != nil {
+	if err := row.StructScan(&user); err != nil {
 		return nil, errors.New("wrong email or password")
 	}
 
@@ -114,7 +114,7 @@ func (a *Auth) GetUser(id int) (*dto.UserOutput, error) {
 
 	var user entities.User
 
-	if err := row.Scan(&user); err != nil {
+	if err := row.StructScan(&user); err != nil {
 		return nil, errors.New("user not found")
 	}
 

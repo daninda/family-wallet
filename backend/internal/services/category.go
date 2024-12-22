@@ -23,7 +23,7 @@ func (s *Category) GetAll(householdId int) ([]dto.CategoryOutput, error) {
 			categories.id,
 			categories.name
 		FROM categories 
-		WHERE categories.household_id = $1`, 
+		WHERE categories.household_id = $1`,
 		householdId)
 
 	if err != nil {
@@ -47,13 +47,13 @@ func (s *Category) GetAll(householdId int) ([]dto.CategoryOutput, error) {
 func (s *Category) Create(householdId int, name string) (*entities.Category, error) {
 	rows, err := s.db.DB.Query(`
 		INSERT INTO categories (household_id, name) 
-		VALUES ($1, $2) RETURNING id`, 
+		VALUES ($1, $2) RETURNING id`,
 		householdId, name)
 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	defer rows.Close()
 
 	id := 0
