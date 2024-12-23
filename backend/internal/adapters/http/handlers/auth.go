@@ -92,6 +92,12 @@ func (a *Auth) CheckToken(w http.ResponseWriter, r *http.Request) {
 
 	token := r.Header.Get("Authorization")
 
+	if len(token) <= 7 {
+		log.Println("token not found")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	token = token[7:]
 
 	id, err := a.jwtService.ValidateToken(token)
