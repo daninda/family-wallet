@@ -15,8 +15,8 @@ const App: FC = () => {
         const token = localStorage.getItem('token');
 
         if (token) {
-            network.auth.check({ token }).then((user) => {
-                if (user != null) {
+            network.auth.check({ token }).then(
+                (user) => {
                     setIsAuth(true);
                     if (user.isAdmin) {
                         setIsAdmin(true);
@@ -24,8 +24,11 @@ const App: FC = () => {
                     setIsLoading(false);
 
                     console.log(user);
+                },
+                () => {
+                    setIsLoading(false);
                 }
-            });
+            );
         } else {
             setIsLoading(false);
         }

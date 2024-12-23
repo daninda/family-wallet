@@ -32,7 +32,7 @@ const Router: FC<Props> = ({ isAdmin, isAuth, isLoading }) => {
     } else {
         return (
             <Routes>
-                <Route element={<Main />}>
+                <Route element={<Main isAdmin={isAdmin} />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/statistics" element={<Statistics />} />
                     {isAdmin && (

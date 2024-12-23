@@ -57,9 +57,9 @@ func main() {
 	router := mux.NewRouter()
 
 	routers.RegisterAuthRoutes(authHandler, router.PathPrefix("/auth").Subrouter())
-	routers.RegisterCategoryRoutes(categoryHandler, router.PathPrefix("/category").Subrouter(), jwtMidlleware)
-	routers.RegisterSubcategoryRoutes(subcategoryHandler, router.PathPrefix("/category").Subrouter(), jwtMidlleware)
-	routers.RegisterRecordRoutes(recordHandler, router.PathPrefix("/record").Subrouter(), jwtMidlleware)
+	routers.RegisterCategoryRoutes(categoryHandler, router.PathPrefix("/categories").Subrouter(), jwtMidlleware)
+	routers.RegisterSubcategoryRoutes(subcategoryHandler, router.PathPrefix("/categories").Subrouter(), jwtMidlleware)
+	routers.RegisterRecordRoutes(recordHandler, router.PathPrefix("/records").Subrouter(), jwtMidlleware)
 
 	log.Printf("Server started on 127.0.0.1:%s", cfg.Port)
 

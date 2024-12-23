@@ -8,10 +8,14 @@ const MainWrapper = styled.main`
     min-height: calc(100vh - 128px - 64px);
 `;
 
-const Main: FC = () => {
+interface Props {
+    isAdmin: boolean;
+}
+
+const Main: FC<Props> = ({ isAdmin }) => {
     return (
         <>
-            <Header username="Danila" />
+            <Header username="Danila" isAdmin={isAdmin} />
             <MainWrapper>
                 <Outlet />
             </MainWrapper>

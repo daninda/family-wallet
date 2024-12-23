@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 
 const CategoryButton = styled.button<{ active: boolean }>`
@@ -32,17 +32,21 @@ interface Props {
     onSelect: (category: CategoryItem) => void;
 }
 
-const CategorySelector: React.FC<Props> = ({ categories = [], onSelect }) => {
-    const allItem: CategoryItem = { id: -1, name: 'Все' };
+const allItem: CategoryItem = { id: -1, name: 'Все' };
 
+const CategorySelector: React.FC<Props> = ({ categories = [], onSelect }) => {
     const [activeCategory, setActiveCategory] = useState<CategoryItem>(
-        categories ? categories[0] : allItem
+        categories.length > 0 ? categories[0] : allItem
     );
 
     const handleCategoryClick = (category: CategoryItem) => {
         setActiveCategory(category);
         onSelect(category);
     };
+
+    useEffect(() => {
+        onSelect({ id: -1, name: 'Все' });
+    }, [categories, onSelect]);
 
     return (
         <CategoryContainer>

@@ -1,9 +1,13 @@
 import axios, { AxiosInstance } from 'axios';
 import { AbstractNetwork } from './abstract_network';
 import { AuthNetwork } from './auth';
+import { CategoryNetwork } from './category';
+import { RecordNetwork } from './record';
 
 export class Network extends AbstractNetwork {
     auth = new AuthNetwork(this);
+    category = new CategoryNetwork(this);
+    record = new RecordNetwork(this);
 
     constructor() {
         super();
@@ -28,7 +32,7 @@ export class Network extends AbstractNetwork {
             axios.create({
                 baseURL: `${window.origin}/api`,
                 headers: {
-                    Authorization: token,
+                    Authorization: 'Bearer ' + token,
                 },
             })
         );

@@ -38,7 +38,7 @@ func (a *Auth) Register(
 			INSERT INTO households (id) VALUES (DEFAULT) RETURNING *
 		`)
 
-		if err := row.StructScan(&household.Id); err != nil {
+		if err := row.StructScan(&household); err != nil {
 			return nil, errors.New("could not create household")
 		}
 	} else {
@@ -70,7 +70,7 @@ func (a *Auth) Register(
 	`, user.Name, user.Email, user.PasswordHash, user.IsAdmin, user.Accepted, user.HouseholdId,
 	)
 
-	if err := row.StructScan(&user.Id); err != nil {
+	if err := row.Scan(&user.Id); err != nil {
 		return nil, errors.New("could not create user")
 	}
 

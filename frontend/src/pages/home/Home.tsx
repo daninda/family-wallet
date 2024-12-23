@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Wrapper } from '../../components/wrappers/Wrapper';
 import CategorySelector from '../../components/categorySelector/CategorySelector';
 import styled from '@emotion/styled';
@@ -7,6 +7,8 @@ import Dropdown from '../../components/dropdowns/Dropdown';
 import Input from '../../components/inputs/Input';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../../components/modals/Modal';
+import { Category } from '../../models/categories';
+import { network } from '../../services/network/network';
 
 const PageWrapper = styled.div`
     padding-top: 38px;
@@ -152,16 +154,13 @@ const ExpenseAlert = styled.div`
 const Home: FC = () => {
     const navigate = useNavigate();
 
-    const categories = [
-        {
-            id: 1,
-            name: 'Category 1',
-        },
-        {
-            id: 2,
-            name: 'Category 2',
-        },
-    ];
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+    const [categories, setCategories] = useState<Category[]>([]);
+
+    const [categoryId, setCategoryId] = useState(-1);
+
+    const [recordsLoading, setRecordsLoading] = useState(true);
+    const [records, setRecords] = useState<any[]>([]);
 
     const subcategories = [
         {
@@ -206,13 +205,42 @@ const Home: FC = () => {
         console.log(newExpense);
     };
 
+    useEffect(() => {
+        network.category.getAll().then(
+            (response) => {
+                setCategories(response);
+                setCategoriesLoading(false);
+            },
+            () => {
+                setCategoriesLoading(false);
+            }
+        );
+    }, []);
+
+    useEffect(() => {
+        network.record.getAll({ categoryId }).then(
+            (response) => {
+                setRecords(response);
+                setRecordsLoading(false);
+            },
+            () => {
+                setRecordsLoading(false);
+            }
+        );
+    }, [categoryId]);
+
     return (
         <Wrapper>
             <PageWrapper>
                 <ExpenseAlert>
                     Ваш лимит трат превышен: 25 000 / 20 000
                 </ExpenseAlert>
-                <CategorySelector categories={categories} onSelect={() => {}} />
+                {!categoriesLoading && (
+                    <CategorySelector
+                        categories={categories || []}
+                        onSelect={() => {}}
+                    />
+                )}
                 <Title>Все траты</Title>
                 <Tools>
                     <Dropdown items={sorts} />

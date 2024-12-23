@@ -27,7 +27,7 @@ export class AuthNetwork extends AbstractSubNetwork {
     async check(data: { token: string }): Promise<User> {
         const response = await this.axios().get<User>('/auth/check', {
             headers: {
-                Authorization: `${data.token}`,
+                Authorization: `Bearer ${data.token}`,
             },
         });
         return response.data;

@@ -21,35 +21,45 @@ func NewRecordService(db *sqlx.DB) *Record {
 
 func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.RecordOutput, error) {
 	minPrice := 0
-	maxPrice := 100000000
+	maxPrice := int(math.MaxInt16)
 	from := int64(0)
-	var to int64 = math.MaxInt64
+	to := int64(math.MaxInt16)
+	categoryId := -1
+	subcategoryId := -1
 
-	if filter.MinPrice != nil {
-		minPrice = *filter.MinPrice
+	if filter.MinPrice != 0 {
+		minPrice = filter.MinPrice
 	}
 
-	if filter.MaxPrice != nil {
-		maxPrice = *filter.MaxPrice
+	if filter.MaxPrice != 0 {
+		maxPrice = filter.MaxPrice
 	}
 
-	if filter.From != nil {
-		from = *filter.From
+	if filter.From != 0 {
+		from = filter.From
 	}
 
-	if filter.To != nil {
-		to = *filter.To
+	if filter.To != -1 {
+		to = filter.To
+	}
+
+	if filter.CategoryId != 0 && filter.CategoryId != -1 {
+		categoryId = filter.CategoryId
+	}
+
+	if filter.SubcategoryId != 0 && filter.SubcategoryId != -1 {
+		subcategoryId = filter.SubcategoryId
 	}
 
 	params := []any{userId, minPrice, maxPrice, from, to}
 
 	query := ""
-	if filter.SubcategoryId != nil {
-		params = append(params, *filter.SubcategoryId)
+	if subcategoryId != -1 {
+		params = append(params, filter.SubcategoryId)
 		query += " AND records.subcategory_id = $6"
-	} else if filter.CategoryId != nil {
-		params = append(params, *filter.CategoryId)
-		query += " AND records.category_id = $6"
+	} else if categoryId != -1 {
+		params = append(params, filter.CategoryId)
+		query += " AND subcategories.category_id = $6"
 	}
 
 	rows, err := s.db.DB.Query(`
@@ -57,15 +67,15 @@ func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.Recor
 			records.id, 
 			records.user_id, 
 			categories.name as category, 
-			records.category_id, 
+			subcategories.category_id, 
 			subcategories.name as subcategory, 
 			records.subcategory_id, 
 			records.price, 
 			records.date, 
 			records.description 
 		FROM records 
-		JOIN categories ON records.category_id = categories.id 
 		JOIN subcategories ON records.subcategory_id = subcategories.id 
+		JOIN categories ON subcategories.category_id = categories.id 
 		WHERE records.user_id = $1 AND price >= $2 AND price <= $3 AND date >= $4 AND date <= $5`+query,
 		params...)
 

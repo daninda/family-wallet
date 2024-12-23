@@ -9,8 +9,8 @@ import (
 
 func RegisterSubcategoryRoutes(subcategory *handlers.Subcategory, router *mux.Router, jwtMiddleware *middlewares.Auth) {
 	router.Use(jwtMiddleware.Middleware)
-	router.HandleFunc("/category/{category_id}/", subcategory.New).Methods("POST")
-	router.HandleFunc("/category/{category_id}/", subcategory.GetAll).Methods("GET")
-	router.HandleFunc("/category/{category_id}/{subcategory_id}", subcategory.Update).Methods("UPDATE")
-	router.HandleFunc("/category/{category_id}/{subcategory_id}", subcategory.Delete).Methods("DELETE")
+	router.HandleFunc("/{category_id}", subcategory.New).Methods("POST")
+	router.HandleFunc("/{category_id}", subcategory.GetAll).Methods("GET")
+	router.HandleFunc("/{category_id}/{subcategory_id}", subcategory.Update).Methods("UPDATE")
+	router.HandleFunc("/{category_id}/{subcategory_id}", subcategory.Delete).Methods("DELETE")
 }

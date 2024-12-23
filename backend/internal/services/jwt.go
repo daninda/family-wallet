@@ -26,11 +26,11 @@ func (j *Jwt) GenerateToken(userId int) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenText, err :=  token.SignedString([]byte(j.secret))
+	tokenText, err := token.SignedString([]byte(j.secret))
 	log.Println("generating")
-	log.Println(tokenText);
-	log.Println(err);
-	res, err := j.ValidateToken(tokenText);
+	log.Println(tokenText)
+	log.Println(err)
+	res, err := j.ValidateToken(tokenText)
 
 	log.Println("validating:")
 	log.Println(res)
@@ -39,7 +39,6 @@ func (j *Jwt) GenerateToken(userId int) (string, error) {
 }
 
 func (j *Jwt) ValidateToken(tokenString string) (int, error) {
-	
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
@@ -58,7 +57,7 @@ func (j *Jwt) ValidateToken(tokenString string) (int, error) {
 		println("claims error")
 		return 0, jwt.ErrSignatureInvalid
 	}
-	
+
 	userId, ok := claims["user_id"].(float64)
 	if !ok {
 		println("user_id error")

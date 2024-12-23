@@ -9,8 +9,8 @@ import (
 
 func RegisterRecordRoutes(record *handlers.Record, router *mux.Router, jwtMiddleware *middlewares.Auth) {
 	router.Use(jwtMiddleware.Middleware)
-	router.HandleFunc("/record/create", record.New).Methods("POST")
-	router.HandleFunc("/records", record.GetAll).Methods("GET")
-	router.HandleFunc("/record/{id}/", record.Update).Methods("UPDATE")
-	router.HandleFunc("/record/{id}/", record.Delete).Methods("DELETE")
+	router.HandleFunc("", record.New).Methods("POST")
+	router.HandleFunc("", record.GetAll).Methods("GET")
+	router.HandleFunc("/{id}", record.Update).Methods("UPDATE")
+	router.HandleFunc("/{id}", record.Delete).Methods("DELETE")
 }

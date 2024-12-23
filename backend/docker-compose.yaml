@@ -9,9 +9,9 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - family-wallet-postgres-data:/var/lib/postgresql/data
 
 volumes:
-  pgdata:
+  family-wallet-postgres-data:
     
     

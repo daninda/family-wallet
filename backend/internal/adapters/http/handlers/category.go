@@ -5,6 +5,7 @@ import (
 	"family-wallet/internal/middlewares"
 	"family-wallet/internal/services"
 	"family-wallet/internal/services/dto"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -23,7 +24,7 @@ func NewCategory(category *services.Category, household *services.Household, val
 
 func (c *Category) New(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value(middlewares.User_id).(int)
-	
+
 	var body *dto.NewCategory
 	err := json.NewDecoder(r.Body).Decode(&body)
 
@@ -68,6 +69,7 @@ func (c *Category) GetAll(w http.ResponseWriter, r *http.Request) {
 	household, err := c.household.GetHousehold(userId)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "User not found", http.StatusTeapot)
 		return
 	}
@@ -75,6 +77,7 @@ func (c *Category) GetAll(w http.ResponseWriter, r *http.Request) {
 	categories, err := c.category.GetAll(household.Id)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}

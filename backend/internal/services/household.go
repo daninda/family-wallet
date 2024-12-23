@@ -33,7 +33,7 @@ func (s *Household) IsAdmin(user_id int) (bool, error) {
 }
 
 func (s *Household) GetHousehold(user_id int) (*entities.Household, error) {
-	row := s.db.QueryRow(`SELECT households.id FROM households JOIN users ON household.id = users.household_id WHERE users.id = $1`, user_id)
+	row := s.db.QueryRow(`SELECT households.id FROM households JOIN users ON households.id = users.household_id WHERE users.id = $1`, user_id)
 
 	var id int
 	err := row.Scan(&id)

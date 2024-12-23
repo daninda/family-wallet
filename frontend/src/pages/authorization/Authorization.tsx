@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import Input from '../../components/inputs/Input';
 import Button from '../../components/buttons/Button';
 import Link from '../../components/links/Link';
+import { network } from '../../services/network/network';
 
 const PageContainer = styled.div`
     display: flex;
@@ -45,6 +46,19 @@ const Authorization: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const handleAuthorize = () => {
+        network.auth
+            .login({
+                email,
+                password,
+            })
+            .then((res) => {
+                localStorage.setItem('token', res.token);
+                localStorage.setItem('user', JSON.stringify(res.user));
+                window.location.reload();
+            });
+    };
+
     return (
         <PageContainer>
             <FormContainer>
@@ -66,7 +80,13 @@ const Authorization: React.FC = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <Button width="wide" onClick={() => {}} title="Войти" />
+                    <Button
+                        width="wide"
+                        onClick={() => {
+                            handleAuthorize();
+                        }}
+                        title="Войти"
+                    />
                     <Link
                         to="/signup"
                         description="Еще нет аккаунта?"
