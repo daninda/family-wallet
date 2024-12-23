@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import styled from '@emotion/styled';
 import Input from '../../components/inputs/Input';
 import Switch from '../../components/switches/Switch';
 import Button from '../../components/buttons/Button';
 import Link from '../../components/links/Link';
 import { network } from '../../services/network/network';
+import { useForm } from 'react-hook-form';
 
 const PageContainer = styled.div`
     display: flex;
@@ -43,21 +43,32 @@ const Header = styled.h2`
     height: 100%;
 `;
 
-const Registration: React.FC = () => {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [familyCode, setFamilyCode] = useState('');
-    const [isAdmin, setIsAdmin] = useState(false);
+type RegistrationForm = {
+    name: string;
+    email: string;
+    password: string;
+    familyCode: string;
+    isAdmin: boolean;
+};
 
-    const handleRegister = () => {
+const Registration: React.FC = () => {
+    const {
+        register,
+        handleSubmit,
+        watch,
+        formState: { errors },
+    } = useForm<RegistrationForm>();
+
+    const form = watch();
+    const isAdmin = form.isAdmin;
+    const handleRegister = (form: RegistrationForm) => {
         network.auth
             .register({
-                name,
-                email,
-                password,
-                isAdmin,
-                householdId: Number.parseInt(familyCode),
+                name: form.name,
+                email: form.email,
+                password: form.password,
+                isAdmin: form.isAdmin,
+                householdId: Number.parseInt(form.familyCode),
             })
             .then((res) => {
                 localStorage.setItem('token', res.token);
@@ -70,58 +81,83 @@ const Registration: React.FC = () => {
         <PageContainer>
             <FormContainer>
                 <Header>Регистрация</Header>
-                <AnotherContainer>
-                    <Input
-                        isWide
-                        label="Имя"
-                        type="text"
-                        placeholder="Введите ваше имя"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    <Input
-                        isWide
-                        label="Эл. почта"
-                        type="email"
-                        placeholder="Введите вашу эл. почту"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <Input
-                        isWide
-                        label="Пароль"
-                        type="password"
-                        placeholder="Введите ваш пароль"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <Switch
-                        checked={isAdmin}
-                        onChange={() => setIsAdmin(!isAdmin)}
-                        label="Администратор"
-                    />
-                    <Input
-                        isDisabled={isAdmin}
-                        isWide
-                        label="Код семьи"
-                        type="text"
-                        placeholder="Введите код семьи"
-                        value={familyCode}
-                        onChange={(e) => setFamilyCode(e.target.value)}
-                    />
-                    <Button
-                        width="wide"
-                        onClick={() => {
-                            handleRegister();
-                        }}
-                        title="Зарегистрироваться"
-                    />
-                    <Link
-                        to="/signin"
-                        description="Уже есть аккаунт?"
-                        text="Войти"
-                    />
-                </AnotherContainer>
+                <form onSubmit={handleSubmit(handleRegister)}>
+                    <AnotherContainer>
+                        <Input
+                            isWide
+                            label="Имя"
+                            type="text"
+                            placeholder="Введите ваше имя"
+                            {...register('name', {
+                                required: 'Обязательно для заполнения',
+                                minLength: {
+                                    value: 4,
+                                    message: 'Минимум 4 символа',
+                                },
+                                maxLength: {
+                                    value: 10,
+                                    message: 'Максимум 10 символов',
+                                },
+                            })}
+                            error={errors.name?.message}
+                        />
+                        <Input
+                            isWide
+                            label="Эл. почта"
+                            type="email"
+                            placeholder="Введите вашу эл. почту"
+                            {...register('email', {
+                                required: 'Обязательно для заполнения',
+                                pattern: {
+                                    value: /\S+@\S+\.\S+/,
+                                    message: 'Почта несоотвествует формату',
+                                },
+                            })}
+                            error={errors.email?.message}
+                        />
+                        <Input
+                            isWide
+                            label="Пароль"
+                            type="password"
+                            placeholder="Введите ваш пароль"
+                            {...register('password', {
+                                required: 'Обязательно для заполнения',
+                                minLength: {
+                                    value: 8,
+                                    message: 'Минимум 8 символа',
+                                },
+                                maxLength: {
+                                    value: 16,
+                                    message: 'Максимум 16 символов',
+                                },
+                            })}
+                            error={errors.password?.message}
+                        />
+                        <Switch
+                            checked={isAdmin}
+                            label="Администратор"
+                            {...register('isAdmin')}
+                        />
+                        <Input
+                            isDisabled={isAdmin}
+                            isWide
+                            label="Код семьи"
+                            type="text"
+                            placeholder="Введите код семьи"
+                            {...register('familyCode')}
+                        />
+                        <Button
+                            width="wide"
+                            type="submit"
+                            title="Зарегистрироваться"
+                        />
+                        <Link
+                            to="/signin"
+                            description="Уже есть аккаунт?"
+                            text="Войти"
+                        />
+                    </AnotherContainer>
+                </form>
             </FormContainer>
         </PageContainer>
     );

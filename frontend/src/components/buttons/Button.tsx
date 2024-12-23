@@ -39,7 +39,7 @@ const StyledButton = styled.button<{
         height === 'small' ? '32px' : height === 'medium' ? '36px' : '40px'};
 `;
 
-interface Props {
+type Props = {
     disabled?: boolean;
     onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     title?: string;
@@ -47,16 +47,21 @@ interface Props {
     height?: 'small' | 'medium' | 'large';
     color?: 'green' | 'yellow' | 'red' | 'white';
     width?: 'content' | 'medium' | 'wide';
-}
+} & React.DetailedHTMLProps<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    HTMLButtonElement
+>;
 
-const Button: FC<Props> = ({
-    disabled = false,
-    title,
-    onClick,
-    width = 'content',
-    height = 'medium',
-    color = 'green',
-}) => {
+const Button: FC<Props> = (props) => {
+    const {
+        disabled = false,
+        title,
+        onClick,
+        width = 'content',
+        height = 'medium',
+        color = 'green',
+    } = props;
+
     return (
         <StyledButton
             onClick={onClick}
@@ -64,6 +69,7 @@ const Button: FC<Props> = ({
             height={height}
             color={color}
             width={width}
+            {...props}
         >
             {title}
         </StyledButton>

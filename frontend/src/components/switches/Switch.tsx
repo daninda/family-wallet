@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, forwardRef } from 'react';
 import styled from '@emotion/styled';
 
 const SwitchContainer = styled.label<{ disabled?: boolean }>`
@@ -42,34 +42,31 @@ const Label = styled.span`
     color: ${({ theme }) => theme.colors.primaryText};
 `;
 
-interface Props {
-    checked: boolean;
-    onChange: () => void;
+type Props = {
+    checked?: boolean;
     disabled?: boolean;
     label?: string;
-}
+} & React.DetailedHTMLProps<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    HTMLInputElement
+>;
 
-const Switch: FC<Props> = ({ checked, onChange, disabled = false, label }) => {
-    const handleToggle = () => {
-        if (!disabled) {
-            onChange();
-        }
-    };
-
+const Switch: FC<Props> = forwardRef((props, ref) => {
+    const { checked, disabled = false, label } = props;
     return (
         <SwitchContainer disabled={disabled}>
             <HiddenCheckbox
+                ref={ref}
                 type="checkbox"
-                checked={checked}
-                onChange={handleToggle}
                 disabled={disabled}
+                {...props}
             />
-            <SwitchTrack checked={checked}>
-                <SwitchThumb checked={checked} />
+            <SwitchTrack checked={!!checked}>
+                <SwitchThumb checked={!!checked} />
             </SwitchTrack>
             {label && <Label>{label}</Label>}
         </SwitchContainer>
     );
-};
+});
 
 export default Switch;

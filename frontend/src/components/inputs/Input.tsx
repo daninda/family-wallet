@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { FC } from 'react';
+import { FC, forwardRef } from 'react';
 
 const Wrapper = styled.div<{ isWide: boolean }>`
     display: flex;
@@ -40,7 +40,7 @@ const StyledInput = styled.input<{
     }
 `;
 
-interface Props {
+type Props = {
     type?: string;
     label?: string;
     error?: string;
@@ -50,35 +50,43 @@ interface Props {
     isWide?: boolean;
     isDisabled?: boolean;
     height?: 'small' | 'medium';
-}
+} & React.DetailedHTMLProps<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    HTMLInputElement
+>;
 
-const Input: FC<Props> = ({
-    type,
-    label,
-    error,
-    placeholder,
-    value,
-    onChange,
-    isWide = false,
-    isDisabled = false,
-    height = 'medium',
-}) => {
-    return (
-        <Wrapper isWide={isWide}>
-            {label && <Label>{label}</Label>}
-            <StyledInput
-                disabled={isDisabled}
-                isDisabled={isDisabled}
-                type={type}
-                hasError={!!error}
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-                height={height}
-            />
-            {error && <Error>{error}</Error>}
-        </Wrapper>
-    );
-};
+const Input: FC<Props> = forwardRef(
+    (props, ref: React.ForwardedRef<HTMLInputElement>) => {
+        const {
+            type,
+            label,
+            error,
+            placeholder,
+            value,
+            onChange,
+            isWide = false,
+            isDisabled = false,
+            height = 'medium',
+        } = props;
+        return (
+            <Wrapper isWide={isWide}>
+                {label && <Label>{label}</Label>}
+                <StyledInput
+                    disabled={isDisabled}
+                    isDisabled={isDisabled}
+                    type={type}
+                    hasError={!!error}
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={onChange}
+                    height={height}
+                    {...props}
+                    ref={ref}
+                />
+                {error && <Error>{error}</Error>}
+            </Wrapper>
+        );
+    }
+);
 
 export default Input;
