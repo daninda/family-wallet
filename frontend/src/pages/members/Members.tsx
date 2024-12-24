@@ -83,16 +83,25 @@ export function Members() {
                             height="large"
                             width="content"
                             title="Копировать"
+                            onClick={() =>
+                                navigator.clipboard.writeText(
+                                    familyCode.toString()
+                                )
+                            }
                         />
                     </CodeTool>
                 </Tools>
-                <SectionTitle>Список участников</SectionTitle>
-                {members.map((user) => (
+                {members && members.length > 0 && (
+                    <SectionTitle>Список участников</SectionTitle>
+                )}
+                {(members || []).map((user) => (
                     <MemberCard key={user.id} title={user.name} />
                 ))}
 
-                <SectionTitle>Ожидающие подтверждения</SectionTitle>
-                {joinRequests.map((user) => (
+                {joinRequests && joinRequests.length > 0 && (
+                    <SectionTitle>Ожидающие подтверждения</SectionTitle>
+                )}
+                {(joinRequests || []).map((user) => (
                     <RequestCard
                         key={user.id}
                         id={user.id}

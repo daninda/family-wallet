@@ -58,6 +58,8 @@ const FiltersTitle = styled.h2`
 `;
 
 const Filters = styled.div`
+    position: sticky;
+    top: 16px;
     display: flex;
     flex-direction: column;
     row-gap: 16px;
@@ -512,7 +514,7 @@ const Home: FC = () => {
                             <div>
                                 <Dropdown
                                     items={subcategoriesForAdd || []}
-                                    placeholder="Выберите подкатегория"
+                                    placeholder="Выберите подкатегорию"
                                     width="wide"
                                     selectedId={subcategoryIdForAdd}
                                     onSelectId={(subcategoryId) =>
