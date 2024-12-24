@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 
 const CategoryButton = styled.button<{ active: boolean }>`
@@ -29,39 +28,29 @@ interface CategoryItem {
 
 interface Props {
     categories?: CategoryItem[];
-    onSelect: (category: CategoryItem) => void;
+    selectedId?: number;
+    onSelectId: (categoryId: number) => void;
 }
 
-const allItem: CategoryItem = { id: -1, name: 'Все' };
-
-const CategorySelector: React.FC<Props> = ({ categories = [], onSelect }) => {
-    const [activeCategory, setActiveCategory] = useState<CategoryItem>(
-        categories.length > 0 ? categories[0] : allItem
-    );
-
-    const handleCategoryClick = (category: CategoryItem) => {
-        setActiveCategory(category);
-        onSelect(category);
-    };
-
-    useEffect(() => {
-        onSelect({ id: -1, name: 'Все' });
-    }, [categories, onSelect]);
-
+const CategorySelector: React.FC<Props> = ({
+    categories = [],
+    onSelectId,
+    selectedId = -1,
+}) => {
     return (
         <CategoryContainer>
             <CategoryButton
-                key={allItem.id}
-                active={allItem.id == activeCategory.id}
-                onClick={() => handleCategoryClick(allItem)}
+                key={-1}
+                active={selectedId == -1}
+                onClick={() => onSelectId(-1)}
             >
-                {allItem.name}
+                Все
             </CategoryButton>
             {categories.map((category) => (
                 <CategoryButton
                     key={category.id}
-                    active={category.id == activeCategory.id}
-                    onClick={() => handleCategoryClick(category)}
+                    active={selectedId == category.id}
+                    onClick={() => onSelectId(category.id)}
                 >
                     {category.name}
                 </CategoryButton>

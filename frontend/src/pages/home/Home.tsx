@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import Modal from '../../components/modals/Modal';
 import { Category } from '../../models/categories';
 import { network } from '../../services/network/network';
+import { Record } from '../../models/records';
+import { sorts } from './consts';
 
 const PageWrapper = styled.div`
     padding-top: 38px;
@@ -31,6 +33,8 @@ const Tools = styled.div`
 
 const Buttons = styled.div`
     display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
     column-gap: 16px;
 `;
 
@@ -74,10 +78,10 @@ const FilterItemTitle = styled.h3`
     font-weight: 600;
 `;
 
-const FilterItemInput = styled.div`
+const FilterItemInput = styled.div<{ two?: boolean }>`
     display: flex;
-    column-gap: 8px;
-    align-items: end;
+    flex-direction: ${({ two }) => (two ? 'column' : 'row')};
+    gap: 8px;
 `;
 
 const ExpensesWrapper = styled.div`
@@ -113,6 +117,7 @@ const ExpensesGroupItem = styled.div`
 const ExpensesGroupItemCategory = styled.p`
     font-size: 12px;
     font-weight: 400;
+    margin: 16px 0 0;
 `;
 
 const ExpenseGroupItemInfo = styled.div`
@@ -151,61 +156,108 @@ const ExpenseAlert = styled.div`
     font-weight: 600;
 `;
 
+const GetRecordsForView = (records: Record[]) => {
+    const result = new Map<string, Record[]>();
+
+    records.forEach((record) => {
+        const dateString = new Date(parseInt(record.date)).toLocaleDateString(
+            'ru-RU',
+            {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+            }
+        );
+
+        if (!result.has(dateString)) {
+            result.set(dateString, []);
+        }
+        result.get(dateString)?.push(record);
+    });
+
+    return result;
+};
+
 const Home: FC = () => {
     const navigate = useNavigate();
 
     const [categoriesLoading, setCategoriesLoading] = useState(true);
     const [categories, setCategories] = useState<Category[]>([]);
 
-    const [categoryId, setCategoryId] = useState(-1);
+    const [subcategories, setSubcategories] = useState<Category[]>([]);
 
     const [recordsLoading, setRecordsLoading] = useState(true);
-    const [records, setRecords] = useState<any[]>([]);
+    const [records, setRecords] = useState<Record[]>([]);
 
-    const subcategories = [
-        {
-            id: 1,
-            name: 'Subcategory 1',
-        },
-        {
-            id: 2,
-            name: 'Subcategory 2',
-        },
-    ];
-
-    const sorts = [
-        {
-            id: 1,
-            name: 'Сначала новые',
-        },
-        {
-            id: 2,
-            name: 'Сначала старые',
-        },
-        {
-            id: 3,
-            name: 'Сначала дорогие',
-        },
-        {
-            id: 4,
-            name: 'Сначала дешевые',
-        },
-    ];
+    const [sortId, setSortId] = useState(1);
+    const [categoryId, setCategoryId] = useState(-1);
+    const [subcategoryId, setSubcategoryId] = useState(-1);
+    const [priceFrom, setPriceFrom] = useState(0);
+    const [priceTo, setPriceTo] = useState(0);
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState(
+        new Date().toLocaleDateString('en-CA')
+    );
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [newExpense, setNewExpense] = useState({
-        category: '',
-        subcategory: '',
-        description: '',
-        cost: 0,
-        date: '',
-    });
+    const [categoryIdForAdd, setCategoryIdForAdd] = useState(-1);
+    const [subcategoriesForAdd, setSubcategoriesForAdd] = useState<Category[]>(
+        []
+    );
+    const [subcategoryIdForAdd, setSubcategoryIdForAdd] = useState(-1);
+    const [descriptionForAdd, setDescriptionForAdd] = useState('');
+    const [costForAdd, setCostForAdd] = useState(0);
+    const [dateForAdd, setDateForAdd] = useState('');
 
     const handleAddExpense = () => {
-        console.log(newExpense);
+        network.record
+            .create({
+                subсategoryId: subcategoryIdForAdd,
+                description: descriptionForAdd,
+                price: costForAdd,
+                date: new Date(dateForAdd).getTime(),
+            })
+            .then(
+                () => {
+                    setRecordsLoading(true);
+                    network.record
+                        .getAll({
+                            categoryId,
+                            sortBy:
+                                sorts.find((s) => s.id === sortId)?.value ||
+                                'date_asc',
+                        })
+                        .then(
+                            (response) => {
+                                setRecords(response);
+                                setRecordsLoading(false);
+                            },
+                            () => {
+                                setRecordsLoading(false);
+                            }
+                        );
+                },
+                () => {}
+            );
+        setIsAddModalOpen(false);
     };
 
     useEffect(() => {
+        if (categoryIdForAdd === -1) {
+            setSubcategoriesForAdd([]);
+            return;
+        }
+
+        network.subcategory.getAll({ categoryId: categoryIdForAdd }).then(
+            (response) => {
+                setSubcategoriesForAdd(response);
+            },
+            () => {}
+        );
+    }, [categoryIdForAdd]);
+
+    useEffect(() => {
+        setCategoriesLoading(true);
         network.category.getAll().then(
             (response) => {
                 setCategories(response);
@@ -215,10 +267,9 @@ const Home: FC = () => {
                 setCategoriesLoading(false);
             }
         );
-    }, []);
 
-    useEffect(() => {
-        network.record.getAll({ categoryId }).then(
+        setRecordsLoading(true);
+        network.record.getAll({}).then(
             (response) => {
                 setRecords(response);
                 setRecordsLoading(false);
@@ -226,6 +277,50 @@ const Home: FC = () => {
             () => {
                 setRecordsLoading(false);
             }
+        );
+    }, []);
+
+    useEffect(() => {
+        setRecordsLoading(true);
+        network.record
+            .getAll({
+                categoryId,
+                subcategoryId,
+                sortBy: sorts.find((s) => s.id === sortId)?.value || 'date_asc',
+                minPrice: priceFrom,
+                maxPrice: priceTo,
+                from: new Date(dateFrom).getTime(),
+                to: new Date(dateTo).getTime(),
+            })
+            .then(
+                (response) => {
+                    setRecords(response);
+                    setRecordsLoading(false);
+                },
+                () => {
+                    setRecordsLoading(false);
+                }
+            );
+    }, [
+        categoryId,
+        subcategoryId,
+        sortId,
+        priceFrom,
+        priceTo,
+        dateFrom,
+        dateTo,
+    ]);
+
+    useEffect(() => {
+        setSubcategoryId(-1);
+        if (categoryId === -1) {
+            return;
+        }
+        network.subcategory.getAll({ categoryId }).then(
+            (response) => {
+                setSubcategories(response);
+            },
+            () => {}
         );
     }, [categoryId]);
 
@@ -238,12 +333,19 @@ const Home: FC = () => {
                 {!categoriesLoading && (
                     <CategorySelector
                         categories={categories || []}
-                        onSelect={() => {}}
+                        selectedId={categoryId}
+                        onSelectId={(id) => {
+                            setCategoryId(id);
+                        }}
                     />
                 )}
                 <Title>Все траты</Title>
                 <Tools>
-                    <Dropdown items={sorts} />
+                    <Dropdown
+                        items={sorts}
+                        selectedId={sortId}
+                        onSelectId={(id) => setSortId(id)}
+                    />
                     <Buttons>
                         <Button
                             height="large"
@@ -262,107 +364,51 @@ const Home: FC = () => {
                 </Tools>
                 <MainWrapper>
                     <ExpensesWrapper>
-                        <ExpensesGroup>
-                            <ExpensesGroupTitle>22 октября</ExpensesGroupTitle>
-                            <ExpensesGroupItem>
-                                <ExpensesGroupItemCategory>
-                                    Category 1
-                                </ExpensesGroupItemCategory>
-                                <ExpenseGroupItemInfo>
-                                    <ExpenseGroupItemLeft>
-                                        <ExpenseGroupItemCost>
-                                            1000 р
-                                        </ExpenseGroupItemCost>
-                                        <ExpenseGroupItemDesc>
-                                            lskflsdkflsdkflsdf
-                                        </ExpenseGroupItemDesc>
-                                    </ExpenseGroupItemLeft>
-                                    <ExpenseGroupItemDate>
-                                        22:30
-                                    </ExpenseGroupItemDate>
-                                </ExpenseGroupItemInfo>
-                            </ExpensesGroupItem>
-                            <ExpensesGroupItem>
-                                <ExpensesGroupItemCategory>
-                                    Category 1
-                                </ExpensesGroupItemCategory>
-                                <ExpenseGroupItemInfo>
-                                    <ExpenseGroupItemLeft>
-                                        <ExpenseGroupItemCost>
-                                            1000 р
-                                        </ExpenseGroupItemCost>
-                                        <ExpenseGroupItemDesc>
-                                            lskflsdkflsdkflsdf
-                                        </ExpenseGroupItemDesc>
-                                    </ExpenseGroupItemLeft>
-                                    <ExpenseGroupItemDate>
-                                        22:30
-                                    </ExpenseGroupItemDate>
-                                </ExpenseGroupItemInfo>
-                            </ExpensesGroupItem>
-                        </ExpensesGroup>
-                        <ExpensesGroup>
-                            <ExpensesGroupTitle>22 октября</ExpensesGroupTitle>
-                            <ExpensesGroupItem>
-                                <ExpensesGroupItemCategory>
-                                    Category 1
-                                </ExpensesGroupItemCategory>
-                                <ExpenseGroupItemInfo>
-                                    <ExpenseGroupItemLeft>
-                                        <ExpenseGroupItemCost>
-                                            1000 р
-                                        </ExpenseGroupItemCost>
-                                        <ExpenseGroupItemDesc>
-                                            lskflsdkflsdkflsdf
-                                        </ExpenseGroupItemDesc>
-                                    </ExpenseGroupItemLeft>
-                                    <ExpenseGroupItemDate>
-                                        22:30
-                                    </ExpenseGroupItemDate>
-                                </ExpenseGroupItemInfo>
-                            </ExpensesGroupItem>
-                        </ExpensesGroup>
-                        <ExpensesGroup>
-                            <ExpensesGroupTitle>22 октября</ExpensesGroupTitle>
-
-                            <ExpensesGroupItem>
-                                <ExpensesGroupItemCategory>
-                                    Category 1
-                                </ExpensesGroupItemCategory>
-                                <ExpenseGroupItemInfo>
-                                    <ExpenseGroupItemLeft>
-                                        <ExpenseGroupItemCost>
-                                            1000 р
-                                        </ExpenseGroupItemCost>
-                                        <ExpenseGroupItemDesc>
-                                            lskflsdkflsdkflsdf
-                                        </ExpenseGroupItemDesc>
-                                    </ExpenseGroupItemLeft>
-                                    <ExpenseGroupItemDate>
-                                        22:30
-                                    </ExpenseGroupItemDate>
-                                </ExpenseGroupItemInfo>
-                            </ExpensesGroupItem>
-                            <ExpensesGroupItem>
-                                <ExpensesGroupItemCategory>
-                                    Category 1
-                                </ExpensesGroupItemCategory>
-                                <ExpenseGroupItemInfo>
-                                    <ExpenseGroupItemLeft>
-                                        <ExpenseGroupItemCost>
-                                            1000 р
-                                        </ExpenseGroupItemCost>
-                                        <ExpenseGroupItemDesc>
-                                            lskflsdkflsdkflsdf
-                                        </ExpenseGroupItemDesc>
-                                    </ExpenseGroupItemLeft>
-                                    <ExpenseGroupItemDate>
-                                        22:30
-                                    </ExpenseGroupItemDate>
-                                </ExpenseGroupItemInfo>
-                            </ExpensesGroupItem>
-                        </ExpensesGroup>
+                        {!recordsLoading &&
+                            [...GetRecordsForView(records || []).entries()].map(
+                                (val) => {
+                                    const dateString = val[0];
+                                    const recordsForDay = val[1];
+                                    return (
+                                        <ExpensesGroup key={dateString}>
+                                            <ExpensesGroupTitle>
+                                                {dateString}
+                                            </ExpensesGroupTitle>
+                                            {recordsForDay.map((r) => (
+                                                <ExpensesGroupItem key={r.id}>
+                                                    <ExpensesGroupItemCategory>
+                                                        {r.category} -{' '}
+                                                        {r.subcategory}
+                                                    </ExpensesGroupItemCategory>
+                                                    <ExpenseGroupItemInfo>
+                                                        <ExpenseGroupItemLeft>
+                                                            <ExpenseGroupItemCost>
+                                                                {r.price} руб.
+                                                            </ExpenseGroupItemCost>
+                                                            <ExpenseGroupItemDesc>
+                                                                {r.description}
+                                                            </ExpenseGroupItemDesc>
+                                                        </ExpenseGroupItemLeft>
+                                                        <ExpenseGroupItemDate>
+                                                            {new Date(
+                                                                parseInt(r.date)
+                                                            ).toLocaleTimeString(
+                                                                'ru-RU',
+                                                                {
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit',
+                                                                }
+                                                            )}
+                                                        </ExpenseGroupItemDate>
+                                                    </ExpenseGroupItemInfo>
+                                                </ExpensesGroupItem>
+                                            ))}
+                                        </ExpensesGroup>
+                                    );
+                                }
+                            )}
                     </ExpensesWrapper>
+
                     <FiltersWrapper>
                         <FiltersTitle>Фильтры</FiltersTitle>
                         <Filters>
@@ -370,98 +416,149 @@ const Home: FC = () => {
                                 <FilterItemTitle>Стоимость</FilterItemTitle>
                                 <FilterItemInput>
                                     от:
-                                    <Input height="small" />
+                                    <Input
+                                        height="small"
+                                        value={priceFrom.toString()}
+                                        onChange={(e) =>
+                                            setPriceFrom(
+                                                parseInt(e.target.value)
+                                            )
+                                        }
+                                    />
                                     до:
-                                    <Input height="small" />
+                                    <Input
+                                        height="small"
+                                        value={priceTo.toString()}
+                                        onChange={(e) =>
+                                            setPriceTo(parseInt(e.target.value))
+                                        }
+                                    />
                                 </FilterItemInput>
                             </FilterItem>
                             <FilterItem>
                                 <FilterItemTitle>Дата</FilterItemTitle>
-                                <FilterItemInput>
+                                <FilterItemInput two>
                                     от:
-                                    <Input height="small" />
+                                    <Input
+                                        type="date"
+                                        height="small"
+                                        isWide
+                                        value={dateFrom}
+                                        onChange={(e) =>
+                                            setDateFrom(e.target.value)
+                                        }
+                                    />
                                     до:
-                                    <Input height="small" />
+                                    <Input
+                                        type="date"
+                                        height="small"
+                                        isWide
+                                        value={dateTo}
+                                        onChange={(e) =>
+                                            setDateTo(e.target.value)
+                                        }
+                                    />
                                 </FilterItemInput>
                             </FilterItem>
+                            {categoryId != -1 && (
+                                <FilterItem>
+                                    <FilterItemTitle>
+                                        Подкатегория
+                                    </FilterItemTitle>
+                                    <FilterItemInput>
+                                        <Dropdown
+                                            items={subcategories || []}
+                                            placeholder="Все подкатегории"
+                                            width="wide"
+                                            selectedId={subcategoryId}
+                                            onSelectId={(subcategoryId) =>
+                                                setSubcategoryId(subcategoryId)
+                                            }
+                                        />
+                                    </FilterItemInput>
+                                </FilterItem>
+                            )}
                         </Filters>
                     </FiltersWrapper>
                 </MainWrapper>
                 {isAddModalOpen && (
                     <Modal onClose={() => setIsAddModalOpen(false)}>
-                        <h2>Добавить трату</h2>
-                        <form>
+                        <h2
+                            style={{
+                                textAlign: 'center',
+                            }}
+                        >
+                            Добавить трату
+                        </h2>
+                        <form
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                rowGap: '24px',
+                                marginTop: '48px',
+                            }}
+                        >
                             <div>
                                 <Dropdown
-                                    items={categories}
-                                    placeholder="Категория"
+                                    items={categories || []}
+                                    placeholder="Выберите категорию"
                                     width="wide"
-                                    onSelect={(category) =>
-                                        setNewExpense({
-                                            ...newExpense,
-                                            category: category.name,
-                                        })
+                                    selectedId={categoryIdForAdd}
+                                    onSelectId={(categoryId) =>
+                                        setCategoryIdForAdd(categoryId)
                                     }
                                 />
                             </div>
                             <div>
                                 <Dropdown
-                                    items={subcategories}
-                                    placeholder="Подкатегория"
+                                    items={subcategoriesForAdd || []}
+                                    placeholder="Выберите подкатегория"
                                     width="wide"
-                                    onSelect={(category) =>
-                                        setNewExpense({
-                                            ...newExpense,
-                                            subcategory: category.name,
-                                        })
+                                    selectedId={subcategoryIdForAdd}
+                                    onSelectId={(subcategoryId) =>
+                                        setSubcategoryIdForAdd(subcategoryId)
                                     }
                                 />
                             </div>
                             <div>
                                 <Input
+                                    label="Описание"
                                     placeholder="Описание"
                                     type="text"
                                     height="medium"
                                     isWide
                                     onChange={(e) =>
-                                        setNewExpense({
-                                            ...newExpense,
-                                            description: e.target.value,
-                                        })
+                                        setDescriptionForAdd(e.target.value)
                                     }
-                                    value={newExpense.description}
+                                    value={descriptionForAdd}
                                 />
                             </div>
                             <div>
                                 <Input
+                                    label="Стоимость"
                                     placeholder="Стоимость"
                                     type="number"
                                     height="medium"
                                     isWide
                                     onChange={(e) =>
-                                        setNewExpense({
-                                            ...newExpense,
-                                            cost: Number.parseInt(
-                                                e.target.value
-                                            ),
-                                        })
+                                        setCostForAdd(
+                                            Number.parseInt(e.target.value)
+                                        )
                                     }
-                                    value={newExpense.cost.toString()}
+                                    value={costForAdd.toString()}
                                 />
                             </div>
                             <div>
                                 <Input
+                                    label="Дата и время"
                                     placeholder="Дата"
-                                    type="date"
+                                    type="datetime-local"
                                     height="medium"
                                     isWide
                                     onChange={(e) =>
-                                        setNewExpense({
-                                            ...newExpense,
-                                            date: e.target.value,
-                                        })
+                                        setDateForAdd(e.target.value)
                                     }
-                                    value={newExpense.date}
+                                    value={dateForAdd}
                                 />
                             </div>
                             <Buttons>

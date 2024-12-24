@@ -64,39 +64,28 @@ interface Item {
 
 interface Props {
     items: Item[];
-    onSelect?: (item: Item) => void;
+    onSelectId: (id: number) => void;
+    selectedId: number;
     placeholder?: string;
     width?: 'content' | 'medium' | 'wide';
 }
 
 const Dropdown: FC<Props> = ({
     items = [],
-    onSelect,
+    onSelectId,
+    selectedId = -1,
     placeholder,
     width = 'medium',
 }) => {
-    const placeholderItem: Item = {
-        id: -1,
-        name: placeholder || 'Выберите',
-    };
-
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedItem, setSelectedItem] = useState(
-        placeholder ? placeholderItem : items[0] || placeholderItem
-    );
 
     const toggleDropdown = () => setIsOpen(!isOpen);
 
-    const handleItemClick = (item: Item) => {
-        setSelectedItem(item);
-        setIsOpen(false);
-        if (onSelect) onSelect(item);
-    };
-
     return (
         <DropdownContainer width={width}>
-            <DropdownButton onClick={toggleDropdown}>
-                {selectedItem.name}
+            <DropdownButton onClick={toggleDropdown} type="button">
+                {items.find((item) => item.id === selectedId)?.name ||
+                    placeholder}
                 <DropdownIcon>
                     <AiOutlineDown />
                 </DropdownIcon>
@@ -105,7 +94,10 @@ const Dropdown: FC<Props> = ({
                 <DropdownMenu>
                     {placeholder && (
                         <DropdownItem
-                            onClick={() => handleItemClick(placeholderItem)}
+                            onClick={() => {
+                                setIsOpen(false);
+                                onSelectId(-1);
+                            }}
                         >
                             {placeholder}
                         </DropdownItem>
@@ -113,7 +105,10 @@ const Dropdown: FC<Props> = ({
                     {items.map((item, index) => (
                         <DropdownItem
                             key={index}
-                            onClick={() => handleItemClick(item)}
+                            onClick={() => {
+                                setIsOpen(false);
+                                onSelectId(item.id);
+                            }}
                         >
                             {item.name}
                         </DropdownItem>

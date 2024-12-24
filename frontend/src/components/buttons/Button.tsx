@@ -69,6 +69,7 @@ const Button: FC<Props> = (props) => {
             height={height}
             color={color}
             width={width}
+            type="button"
             {...props}
         >
             {title}
