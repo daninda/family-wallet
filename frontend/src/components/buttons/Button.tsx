@@ -64,6 +64,7 @@ const Button: FC<Props> = ({
             height={height}
             color={color}
             width={width}
+            type="button"
         >
             {title}
         </StyledButton>

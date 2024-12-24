@@ -7,6 +7,7 @@ import (
 	"family-wallet/internal/services"
 	"family-wallet/internal/services/dto"
 	"family-wallet/internal/util"
+	"log"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -23,6 +24,26 @@ func NewSubcategory(subcategory *services.Subcategory, household *services.House
 }
 
 func (s *Subcategory) New(w http.ResponseWriter, r *http.Request) {
+	var body *dto.NewSubcategory
+
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		http.Error(w, "Could not decode body", http.StatusBadRequest)
+		return
+	}
+
+	if err := s.Validator.Struct(body); err != nil {
+		var validationErrors []string
+		for _, fieldError := range err.(validator.ValidationErrors) {
+			validationErrors = append(validationErrors, fieldError.Error())
+		}
+		log.Println(validationErrors)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"errors": validationErrors,
+		})
+		return
+	}
 
 	userId := r.Context().Value(middlewares.User_id).(int)
 
@@ -37,11 +58,22 @@ func (s *Subcategory) New(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Permission denied", http.StatusUnauthorized)
 		return
 	}
+
+	res, err := s.subcategory.Create(body.CategoryId, body.Name)
+
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
 }
 
 func (s *Subcategory) GetAll(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value(middlewares.User_id).(int)
-	categoryId, err := util.GetIntPathParam(r, "categoryId")
+	categoryId, err := util.GetIntPathParam(r, "category_id")
 
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -135,12 +167,11 @@ func (s *Subcategory) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var subcategory = entities.Subcategory {
-		Id: subcategoryId,
-		Name: body.Name,
+	var subcategory = entities.Subcategory{
+		Id:         subcategoryId,
+		Name:       body.Name,
 		CategoryId: body.CategoryId,
 	}
-
 
 	_, err = s.subcategory.Update(subcategoryId, &subcategory)
 

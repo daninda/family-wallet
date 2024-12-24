@@ -36,7 +36,7 @@ func (c *Category) New(w http.ResponseWriter, r *http.Request) {
 	household, err := c.household.GetHousehold(userId)
 
 	if err != nil {
-		http.Error(w, "User not found", http.StatusTeapot)
+		http.Error(w, "Household not found", http.StatusTeapot)
 		return
 	}
 

@@ -54,7 +54,7 @@ func (s *Category) Create(householdId int, name string) (*entities.Category, err
 		return nil, err
 	}
 
-	defer rows.Close()
+	rows.Close()
 
 	id := 0
 

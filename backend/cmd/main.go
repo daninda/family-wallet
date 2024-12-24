@@ -58,7 +58,7 @@ func main() {
 
 	routers.RegisterAuthRoutes(authHandler, router.PathPrefix("/auth").Subrouter())
 	routers.RegisterCategoryRoutes(categoryHandler, router.PathPrefix("/categories").Subrouter(), jwtMidlleware)
-	routers.RegisterSubcategoryRoutes(subcategoryHandler, router.PathPrefix("/categories").Subrouter(), jwtMidlleware)
+	routers.RegisterSubcategoryRoutes(subcategoryHandler, router.PathPrefix("/subcategories").Subrouter(), jwtMidlleware)
 	routers.RegisterRecordRoutes(recordHandler, router.PathPrefix("/records").Subrouter(), jwtMidlleware)
 
 	log.Printf("Server started on 127.0.0.1:%s", cfg.Port)

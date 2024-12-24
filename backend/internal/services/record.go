@@ -3,6 +3,8 @@ package services
 import (
 	"family-wallet/internal/entities"
 	"family-wallet/internal/services/dto"
+	"family-wallet/internal/util"
+	"log"
 	"math"
 	"time"
 
@@ -21,11 +23,13 @@ func NewRecordService(db *sqlx.DB) *Record {
 
 func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.RecordOutput, error) {
 	minPrice := 0
-	maxPrice := int(math.MaxInt16)
+	maxPrice := int(math.MaxInt32)
 	from := int64(0)
-	to := int64(math.MaxInt16)
+	to := int64(math.MaxInt64)
 	categoryId := -1
 	subcategoryId := -1
+
+	sortBy := util.DateAsc
 
 	if filter.MinPrice != 0 {
 		minPrice = filter.MinPrice
@@ -39,7 +43,7 @@ func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.Recor
 		from = filter.From
 	}
 
-	if filter.To != -1 {
+	if filter.To != 0 {
 		to = filter.To
 	}
 
@@ -51,15 +55,33 @@ func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.Recor
 		subcategoryId = filter.SubcategoryId
 	}
 
+	if filter.SortBy != "" {
+		sortBy = util.GetSort(filter.SortBy)
+	}
+
 	params := []any{userId, minPrice, maxPrice, from, to}
 
 	query := ""
-	if subcategoryId != -1 {
-		params = append(params, filter.SubcategoryId)
-		query += " AND records.subcategory_id = $6"
-	} else if categoryId != -1 {
-		params = append(params, filter.CategoryId)
+	if categoryId != -1 {
+		params = append(params, categoryId)
 		query += " AND subcategories.category_id = $6"
+
+		if subcategoryId != -1 {
+			params = append(params, subcategoryId)
+			query += " AND records.subcategory_id = $7"
+		}
+	}
+
+	sort := ""
+	switch sortBy {
+	case util.CostDesc:
+		sort = " ORDER BY records.price DESC"
+	case util.CostAsc:
+		sort = " ORDER BY records.price ASC"
+	case util.DateDesc:
+		sort = " ORDER BY records.date DESC"
+	case util.DateAsc:
+		sort = " ORDER BY records.date ASC"
 	}
 
 	rows, err := s.db.DB.Query(`
@@ -76,7 +98,7 @@ func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.Recor
 		FROM records 
 		JOIN subcategories ON records.subcategory_id = subcategories.id 
 		JOIN categories ON subcategories.category_id = categories.id 
-		WHERE records.user_id = $1 AND price >= $2 AND price <= $3 AND date >= $4 AND date <= $5`+query,
+		WHERE records.user_id = $1 AND price >= $2 AND price <= $3 AND date >= $4 AND date <= $5`+query+sort,
 		params...)
 
 	if err != nil {
@@ -106,6 +128,7 @@ func (s *Record) Create(userId int, subcategoryId int, description string, price
 
 	var id int
 	if err := row.Scan(&id); err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 

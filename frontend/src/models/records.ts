@@ -1,7 +1,10 @@
 export interface Record {
     id: number;
     userId: string;
-    subCategoryId: number;
+    categoryId: number;
+    category: string;
+    subcategoryId: number;
+    subcategory: string;
     price: number;
     date: string;
     description: string;
@@ -9,19 +12,20 @@ export interface Record {
 
 export interface GetAllRecordsRequest {
     categoryId?: number;
-    subCategoryId?: number;
+    subcategoryId?: number;
     minPrice?: number;
     maxPrice?: number;
     from?: number;
     to?: number;
+    sortBy?: string;
 }
 
 export type GetAllRecordsResponse = Record[];
 
 export interface CreateRecordRequest {
-    subCategoryId: number;
+    subсategoryId: number;
     price: number;
-    date: string;
+    date: number;
     description: string;
 }
 

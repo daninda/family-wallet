@@ -36,6 +36,7 @@ func (h *Record) GetAll(w http.ResponseWriter, r *http.Request) {
 		To:            parseInt64QueryParam(query, "to"),
 		CategoryId:    parseIntQueryParam(query, "categoryId"),
 		SubcategoryId: parseIntQueryParam(query, "subcategoryId"),
+		SortBy:        query.Get("sortBy"),
 	}
 
 	records, err := h.record.GetAllFiltered(userId, filter)

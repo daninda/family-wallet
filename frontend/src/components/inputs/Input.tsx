@@ -75,6 +75,8 @@ const Input: FC<Props> = ({
                 value={value}
                 onChange={onChange}
                 height={height}
+                min={1}
+                max={100000}
             />
             {error && <Error>{error}</Error>}
         </Wrapper>

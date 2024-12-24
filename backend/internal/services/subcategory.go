@@ -2,6 +2,7 @@ package services
 
 import (
 	"family-wallet/internal/entities"
+	"log"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -32,6 +33,7 @@ func (s *Subcategory) Delete(id int) error {
 }
 
 func (s *Subcategory) Create(categoryId int, name string) (*entities.Subcategory, error) {
+	log.Println(categoryId)
 	row := s.db.QueryRow("INSERT INTO subcategories (name, category_id) VALUES ($1, $2) RETURNING id", name, categoryId)
 	var id int
 	err := row.Scan(&id)
