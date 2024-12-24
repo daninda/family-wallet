@@ -24,13 +24,6 @@ func (s *Subcategory) GetAll(categoryId int) ([]entities.Subcategory, error) {
 	return subcategories, err
 }
 
-func (s *Subcategory) Delete(id int) error {
-	_, err := s.db.Exec("DELETE FROM subcategories WHERE id = $1", id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func (s *Subcategory) Create(categoryId int, name string) (*entities.Subcategory, error) {
 	log.Println(categoryId)

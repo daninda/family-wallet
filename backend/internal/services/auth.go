@@ -35,18 +35,23 @@ func (a *Auth) Register(
 
 	if input.IsAdmin {
 		row := a.db.QueryRowx(`
-			INSERT INTO households (id) VALUES (DEFAULT) RETURNING *
+			INSERT INTO households (id) VALUES (DEFAULT)
 		`)
 
 		if err := row.StructScan(&household); err != nil {
 			return nil, errors.New("could not create household")
 		}
 	} else {
+		print("user requested to join household '")
+		print(input.HouseholdId)
+		println("'")
 		row := a.db.QueryRowx(`
-			SELECT * FROM households WHERE id = $1 RETURNING *
+			SELECT * FROM households WHERE id = $1
 		`, input.HouseholdId)
 
+		println(row)
 		if err := row.StructScan(&household); err != nil {
+			println(err.Error())
 			return nil, errors.New("could not find household")
 		}
 	}

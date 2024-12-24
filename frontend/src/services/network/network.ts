@@ -4,12 +4,14 @@ import { AuthNetwork } from './auth';
 import { CategoryNetwork } from './category';
 import { RecordNetwork } from './record';
 import { SubcategoryNetwork } from './subcategory';
+import { MemberNetwork } from './member';
 
 export class Network extends AbstractNetwork {
     auth = new AuthNetwork(this);
     category = new CategoryNetwork(this);
     record = new RecordNetwork(this);
     subcategory = new SubcategoryNetwork(this);
+    member = new MemberNetwork(this);
 
     constructor() {
         super();
