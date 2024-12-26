@@ -208,12 +208,18 @@ const Home: FC = () => {
     const [sortId, setSortId] = useState(1);
     const [categoryId, setCategoryId] = useState(-1);
     const [subcategoryId, setSubcategoryId] = useState(-1);
+
     const [priceFrom, setPriceFrom] = useState(0);
-    const [priceTo, setPriceTo] = useState(0);
+    const [priceTo, setPriceTo] = useState(100000);
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState(
         new Date().toLocaleDateString('en-CA')
     );
+
+    const [priceFromError, setPriceFromError] = useState('');
+    const [priceToError, setPriceToError] = useState('');
+    const [dateFromError, setDateFromError] = useState('');
+    const [dateToError, setDateToError] = useState('');
 
     const [limitation, setLimitation] = useState(0);
 
@@ -235,7 +241,7 @@ const Home: FC = () => {
     const [costForAddError, setCostForAddError] = useState('');
     const [dateForAddError, setDateForAddError] = useState('');
 
-    const clearErrors = () => {
+    const clearAddErrors = () => {
         setCategoryIdForAddError('');
         setSubcategoryIdForAddError('');
         setDescriptionForAddError('');
@@ -243,8 +249,15 @@ const Home: FC = () => {
         setDateForAddError('');
     };
 
+    const clearFilterErrors = () => {
+        setPriceFromError('');
+        setPriceToError('');
+        setDateFromError('');
+        setDateToError('');
+    };
+
     const handleAddExpense = () => {
-        clearErrors();
+        clearAddErrors();
 
         let hasError = false;
 
@@ -358,6 +371,38 @@ const Home: FC = () => {
     }, []);
 
     useEffect(() => {
+        let hasError = false;
+
+        if (priceFrom < 0 || priceFrom > 100000 || isNaN(priceFrom)) {
+            setPriceFromError('Введите корректную минимальную цену');
+            hasError = true;
+        }
+        if (priceTo < 0 || priceTo > 100000 || isNaN(priceTo)) {
+            setPriceToError('Введите корректную максимальную цену');
+            hasError = true;
+        }
+        if (priceFrom > priceTo) {
+            setPriceFromError(
+                'Минимальная цена не может быть больше максимальной'
+            );
+            hasError = true;
+        }
+        if (
+            new Date(dateFrom).getTime() &&
+            new Date(dateTo).getTime() &&
+            (new Date(dateFrom).getTime() > new Date(dateTo).getTime() ||
+                new Date(dateFrom).getTime() < 0 ||
+                new Date(dateTo).getTime() >
+                    new Date(Date.now() + 1000 * 60 * 60 * 24).getTime())
+        ) {
+            setDateFromError('Введите корректные даты');
+            hasError = true;
+        }
+
+        if (hasError) {
+            return;
+        }
+
         setRecordsLoading(true);
         network.record
             .getAll({
@@ -497,24 +542,36 @@ const Home: FC = () => {
                         <Filters>
                             <FilterItem>
                                 <FilterItemTitle>Стоимость</FilterItemTitle>
-                                <FilterItemInput>
+                                <FilterItemInput two>
                                     от:
                                     <Input
                                         height="small"
                                         value={priceFrom.toString()}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
                                             setPriceFrom(
-                                                parseInt(e.target.value)
-                                            )
-                                        }
+                                                e.target.value
+                                                    ? parseInt(e.target.value)
+                                                    : 0
+                                            );
+                                            if (priceFromError) {
+                                                clearFilterErrors();
+                                            }
+                                        }}
                                     />
                                     до:
                                     <Input
                                         height="small"
                                         value={priceTo.toString()}
-                                        onChange={(e) =>
-                                            setPriceTo(parseInt(e.target.value))
-                                        }
+                                        onChange={(e) => {
+                                            setPriceTo(
+                                                e.target.value
+                                                    ? parseInt(e.target.value)
+                                                    : 0
+                                            );
+                                            if (priceToError) {
+                                                clearFilterErrors();
+                                            }
+                                        }}
                                     />
                                 </FilterItemInput>
                             </FilterItem>
@@ -527,9 +584,12 @@ const Home: FC = () => {
                                         height="small"
                                         isWide
                                         value={dateFrom}
-                                        onChange={(e) =>
-                                            setDateFrom(e.target.value)
-                                        }
+                                        onChange={(e) => {
+                                            setDateFrom(e.target.value);
+                                            if (dateFromError || dateToError) {
+                                                clearFilterErrors();
+                                            }
+                                        }}
                                     />
                                     до:
                                     <Input
@@ -537,9 +597,12 @@ const Home: FC = () => {
                                         height="small"
                                         isWide
                                         value={dateTo}
-                                        onChange={(e) =>
-                                            setDateTo(e.target.value)
-                                        }
+                                        onChange={(e) => {
+                                            setDateTo(e.target.value);
+                                            if (dateFromError || dateToError) {
+                                                clearFilterErrors();
+                                            }
+                                        }}
                                     />
                                 </FilterItemInput>
                             </FilterItem>
@@ -559,6 +622,19 @@ const Home: FC = () => {
                                             }
                                         />
                                     </FilterItemInput>
+                                </FilterItem>
+                            )}
+                            {(priceFromError ||
+                                priceToError ||
+                                dateFromError ||
+                                dateToError) && (
+                                <FilterItem>
+                                    <FilterItemTitle style={{ color: 'red' }}>
+                                        {priceFromError ||
+                                            priceToError ||
+                                            dateFromError ||
+                                            dateToError}
+                                    </FilterItemTitle>
                                 </FilterItem>
                             )}
                         </Filters>
