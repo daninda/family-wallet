@@ -5,6 +5,7 @@ import { ThemeProvider } from '@emotion/react';
 import { main } from './themes';
 import GlobalStyles from './themes/global';
 import { network } from './services/network/network';
+import { createTheme } from '@mui/material';
 
 const App: FC = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +36,18 @@ const App: FC = () => {
     }, []);
 
     return (
-        <ThemeProvider theme={main}>
+        <ThemeProvider
+            theme={{
+                ...createTheme({
+                    palette: {
+                        primary: {
+                            main: main.colors.primary,
+                        },
+                    },
+                }),
+                ...main,
+            }}
+        >
             <GlobalStyles>
                 <div className="global">
                     <BrowserRouter>

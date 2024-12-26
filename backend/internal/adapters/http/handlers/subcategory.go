@@ -7,8 +7,10 @@ import (
 	"family-wallet/internal/services"
 	"family-wallet/internal/services/dto"
 	"family-wallet/internal/util"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -75,7 +77,9 @@ func (s *Subcategory) New(w http.ResponseWriter, r *http.Request) {
 
 func (s *Subcategory) GetAll(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value(middlewares.User_id).(int)
-	categoryId, err := util.GetIntQueryParam(r, "category_id")
+	categoryIdText := r.URL.Query().Get("category_id")
+	categoryId, err := strconv.Atoi(categoryIdText)
+
 
 	if err != nil {
 		log.Println(err.Error())
@@ -127,10 +131,10 @@ func (s *Subcategory) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	subcategoryId, err := util.GetIntPathParam(r, "subcategoryId")
+	subcategoryId, err := util.GetIntPathParam(r, "id")
 
 	if err != nil {
-		log.Println(err.Error())
+		fmt.Printf("Error: %s\n", err.Error())
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}

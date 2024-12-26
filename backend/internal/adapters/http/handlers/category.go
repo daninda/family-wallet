@@ -5,6 +5,7 @@ import (
 	"family-wallet/internal/middlewares"
 	"family-wallet/internal/services"
 	"family-wallet/internal/services/dto"
+	"family-wallet/internal/util"
 	"log"
 	"net/http"
 	"strconv"
@@ -82,6 +83,7 @@ func (c *Category) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(categories)
 }
@@ -101,18 +103,15 @@ func (c *Category) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := r.URL.Query().Get("id")
+	categoryId, err := util.GetIntPathParam(r, "id")
 
-	if id == "" {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	categoryId, err := strconv.Atoi(id)
 	if err != nil {
+
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
+
+
 	err = c.category.Delete(categoryId)
 
 	if err != nil {
