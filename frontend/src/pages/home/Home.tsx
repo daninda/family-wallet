@@ -266,7 +266,12 @@ const Home: FC = () => {
             setCostForAddError('Введите стоимость (от 1 до 100000 рублей)');
             hasError = true;
         }
-        if (dateForAdd === '') {
+        if (
+            dateForAdd === '' ||
+            isNaN(new Date(dateForAdd).getTime()) ||
+            new Date(dateForAdd).getTime() > Date.now() ||
+            new Date(dateForAdd).getTime() < 0
+        ) {
             setDateForAddError('Введите корректную дату');
             hasError = true;
         }
