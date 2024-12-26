@@ -15,11 +15,11 @@ const ModalOverlay = styled.div`
     z-index: 1000;
 `;
 
-const ModalContent = styled.div`
+const ModalContent = styled.div<{ width?: 'medium' | 'large' }>`
     background: #fff;
     padding: 24px;
     border-radius: 8px;
-    width: 400px;
+    width: ${({ width }) => (width === 'medium' ? '500px' : '800px')};
     max-width: 90%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
@@ -37,11 +37,12 @@ const CloseButton = styled.button`
 interface ModalProps {
     onClose: () => void;
     children: React.ReactNode;
+    width?: 'medium' | 'large';
 }
 
-const Modal: FC<ModalProps> = ({ onClose, children }) => (
+const Modal: FC<ModalProps> = ({ onClose, children, width = 'medium' }) => (
     <ModalOverlay onClick={onClose}>
-        <ModalContent onClick={(e) => e.stopPropagation()}>
+        <ModalContent onClick={(e) => e.stopPropagation()} width={width}>
             <CloseButton onClick={onClose}>
                 <AiOutlineClose size={24} />
             </CloseButton>
