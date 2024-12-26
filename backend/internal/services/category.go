@@ -31,7 +31,7 @@ func (s *Category) GetAll(householdId int) ([]dto.CategoryOutput, error) {
 	}
 	defer rows.Close()
 
-	var records []dto.CategoryOutput
+	var records = []dto.CategoryOutput{}
 	for rows.Next() {
 		var record dto.CategoryOutput
 		err := rows.Scan(&record.Id, &record.Name)

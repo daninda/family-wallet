@@ -19,7 +19,7 @@ export class CategoryNetwork extends AbstractSubNetwork {
 
     async getOne(data: GetOneCategoryRequest): Promise<GetOneCategoryResponse> {
         const response = await this.axios().get<GetOneCategoryResponse>(
-            `/category`,
+            `/categories`,
             {
                 params: data,
             }
@@ -29,7 +29,7 @@ export class CategoryNetwork extends AbstractSubNetwork {
 
     async create(data: CreateCategoryRequest): Promise<CreateCategoryResponse> {
         const response = await this.axios().post<CreateCategoryResponse>(
-            '/category',
+            '/categories',
             data
         );
         return response.data;
@@ -37,13 +37,13 @@ export class CategoryNetwork extends AbstractSubNetwork {
 
     async update(data: UpdateCategoryRequest): Promise<UpdateCategoryResponse> {
         const response = await this.axios().put<UpdateCategoryResponse>(
-            '/category',
+            '/categories',
             data
         );
         return response.data;
     }
 
     async delete(data: DeleteCategoryRequest): Promise<void> {
-        await this.axios().delete<void>('/category', { params: data });
+        await this.axios().delete<void>('/categories/' + data.id);
     }
 }

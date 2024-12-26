@@ -1,9 +1,15 @@
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Wrapper } from '../../components/wrappers/Wrapper';
 import styled from '@emotion/styled';
 import Button from '../../components/buttons/Button';
 import { useNavigate } from 'react-router-dom';
 import { AiOutlineClose } from 'react-icons/ai';
+import { Modal } from './Modal';
+import { CategoryModal } from './CategoryModal';
+import { network } from '../../services/network/network';
+import { Category } from '../../models/categories';
+import { SubcategoryModal } from './SubcategoryModal';
+import { Subcategory } from '../../models/subcategories';
 
 const PageWrapper = styled.div`
     padding-top: 16px;
@@ -38,7 +44,7 @@ const CategoryWrapper = styled.div`
     width: 480px;
 `;
 
-const Category = styled.div`
+const CategoryDiv = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -70,8 +76,93 @@ const SubCategoriesWrapper = styled.div`
 const Categories: FC = () => {
     const navigate = useNavigate();
 
+    const [categories, setCategories] = useState<Category[]>([]);
+
+    const [categoryModal, setCategoryModal] = useState(false);
+    const [subcategoryModal, setSubcategoryModal] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<number | null>(
+        null
+    );
+    const [subcategories, setSubcategories] = useState<
+        Record<number, Subcategory[]>
+    >({});
+
+    useEffect(() => {
+        network.category.getAll().then(setCategories);
+    }, []);
+
+    useEffect(() => {
+        requestAllSubcategories();
+    }, [categories]);
+
+    const deleteCategory = (id: number) => {
+        network.category.delete({ id }).then(() => {
+            requestCategories();
+        });
+    };
+
+    const deleteSubcategory = (id: number) => {
+        network.subcategory.delete({ id }).then(() => {
+            requestCategories();
+        });
+    };
+
+    const saveSubcategory = (id: number, subcategories: Subcategory[]) => {
+        setSubcategories((prev) => {
+            return {
+                ...prev,
+                [id]: subcategories,
+            };
+        });
+    };
+
+    const requestCategories = () => {
+        return network.category.getAll().then(setCategories);
+    };
+
+    const requestAllSubcategories = () => {
+        categories.map((c) => c.id).forEach((id) => requestSubcategories(id));
+    };
+
+    const requestSubcategories = (id: number) => {
+        return network.subcategory.getAll({ categoryId: id }).then((r) => {
+            saveSubcategory(id, r);
+        });
+    };
+
     return (
         <Wrapper>
+            {categoryModal && (
+                <Modal onClose={() => setCategoryModal(false)}>
+                    <CategoryModal
+                        onSubmit={({ name }) => {
+                            network.category.create({ name }).then(() => {
+                                setCategoryModal(false);
+                                requestCategories();
+                            });
+                        }}
+                    />
+                </Modal>
+            )}
+
+            {subcategoryModal && (
+                <Modal onClose={() => setSubcategoryModal(false)}>
+                    <SubcategoryModal
+                        categories={categories}
+                        category={selectedCategory || 0}
+                        onSubmit={({ id, name }) => {
+                            network.subcategory
+                                .create({ categoryId: id, name })
+                                .then(() => {
+                                    setSubcategoryModal(false);
+                                    requestCategories();
+                                    requestAllSubcategories();
+                                });
+                        }}
+                    />
+                </Modal>
+            )}
+
             <PageWrapper>
                 <PageTitle>Категории</PageTitle>
                 <Tools>
@@ -85,35 +176,61 @@ const Categories: FC = () => {
                 </Tools>
                 <CategoriesWrapper>
                     <CategoryWrapper>
-                        <Category>
-                            <CategoryTitle>Категория 1</CategoryTitle>
-                            <IconButton>
-                                <AiOutlineClose size={24} />
-                            </IconButton>
-                        </Category>
-                        <SubCategoriesWrapper>
-                            <Category>
-                                <CategoryTitle>Подкатегория 1</CategoryTitle>
-                                <IconButton>
-                                    <AiOutlineClose size={24} />
-                                </IconButton>
-                            </Category>
-                            <Category>
-                                <CategoryTitle>Подкатегория 2</CategoryTitle>
-                                <IconButton>
-                                    <AiOutlineClose size={24} />
-                                </IconButton>
-                            </Category>
-                            <Button
-                                height="large"
-                                width="wide"
-                                title="Добавить подкатегорию"
-                            />
-                        </SubCategoriesWrapper>
+                        {categories.map((category) => (
+                            <>
+                                <CategoryDiv>
+                                    <CategoryTitle>
+                                        {category.name}
+                                    </CategoryTitle>
+                                    <IconButton>
+                                        <AiOutlineClose
+                                            size={24}
+                                            onClick={() =>
+                                                deleteCategory(category.id)
+                                            }
+                                        />
+                                    </IconButton>
+                                </CategoryDiv>
+                                <SubCategoriesWrapper>
+                                    {subcategories[category.id] &&
+                                        subcategories[category.id].map(
+                                            (subcategory) => (
+                                                <CategoryDiv>
+                                                    <CategoryTitle>
+                                                        {subcategory.name}
+                                                    </CategoryTitle>
+                                                    <IconButton>
+                                                        <AiOutlineClose
+                                                            size={24}
+                                                            onClick={() =>
+                                                                deleteSubcategory(
+                                                                    subcategory.id
+                                                                )
+                                                            }
+                                                        />
+                                                    </IconButton>
+                                                </CategoryDiv>
+                                            )
+                                        )}
+                                    <Button
+                                        height="large"
+                                        width="wide"
+                                        title="Добавить подкатегорию"
+                                        onClick={() => {
+                                            setSelectedCategory(category.id);
+
+                                            setSubcategoryModal(true);
+                                        }}
+                                    />
+                                </SubCategoriesWrapper>
+                            </>
+                        ))}
+
                         <Button
                             height="large"
                             width="wide"
                             title="Добавить категорию"
+                            onClick={() => setCategoryModal(true)}
                         />
                     </CategoryWrapper>
                 </CategoriesWrapper>

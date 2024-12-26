@@ -55,6 +55,6 @@ export class SubcategoryNetwork extends AbstractSubNetwork {
     }
 
     async delete(data: DeleteSubcategoryRequest): Promise<void> {
-        await this.axios().delete<void>('/subcategories', { params: data });
+        await this.axios().delete<void>('/subcategories/' + data.id);
     }
 }
