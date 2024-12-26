@@ -73,7 +73,9 @@ const Footer: FC = () => {
                 <FooterWrapper>
                     <Title>Семейная копилка</Title>
                     <Buttons>
-                        <Button href="/help.html">Справка</Button>
+                        <Button href="/help.html" target="_blank">
+                            Справка
+                        </Button>
                         <Button onClick={() => setIsModalOpen(true)}>
                             О разработчиках
                         </Button>
