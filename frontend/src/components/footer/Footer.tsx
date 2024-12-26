@@ -73,10 +73,10 @@ const Footer: FC = () => {
                 <FooterWrapper>
                     <Title>Семейная копилка</Title>
                     <Buttons>
+                        <Button href="/help.html">Справка</Button>
                         <Button onClick={() => setIsModalOpen(true)}>
-                            Справка
+                            О разработчиках
                         </Button>
-                        <Button href="/help.html">О разработчиках</Button>
                     </Buttons>
                 </FooterWrapper>
             </Wrapper>
