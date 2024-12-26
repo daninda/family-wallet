@@ -4,6 +4,7 @@ import { Wrapper } from '../wrappers/Wrapper';
 import Button from '../buttons/Button';
 import { AiOutlineUser } from 'react-icons/ai';
 import { useNavigate } from 'react-router-dom';
+import { network } from '../../services/network/network';
 
 const HeaderWrapper = styled.header`
     display: flex;
@@ -76,7 +77,14 @@ const Header: FC<Props> = ({ isAdmin = false, username }) => {
                             <AiOutlineUser size={24} />
                             {username}
                         </User>
-                        <Button height="small" title="Выйти" />
+                        <Button
+                            height="small"
+                            title="Выйти"
+                            onClick={() => {
+                                network.resetToken();
+                                window.location.reload();
+                            }}
+                        />
                     </Info>
                 </HeaderWrapper>
             </Wrapper>
