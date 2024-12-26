@@ -22,6 +22,20 @@ func GetIntPathParam(r *http.Request, name string) (int, error) {
 	return categoryIdInt, err
 }
 
+func GetIntQueryParam(r *http.Request, name string) (int, error) {
+	param := r.URL.Query().Get(name)
+
+	if param == "" {
+		return -1, errors.New("param is required")
+	}
+
+	categoryIdInt, err := strconv.Atoi(param)
+	if err != nil {
+		return -1, errors.New("param must be an integer")
+	}
+	return categoryIdInt, err
+}
+
 const (
 	DateAsc int = iota
 	DateDesc
@@ -43,4 +57,3 @@ func GetSort(sortString string) int {
 		return DateAsc
 	}
 }
-

@@ -57,6 +57,11 @@ const DropdownIcon = styled.span`
     font-size: 16px;
 `;
 
+const Error = styled.span`
+    font-size: 12px;
+    color: ${({ theme }) => theme.colors.error};
+`;
+
 interface Item {
     id: number;
     name: string;
@@ -68,6 +73,7 @@ interface Props {
     selectedId: number;
     placeholder?: string;
     width?: 'content' | 'medium' | 'wide';
+    error?: string;
 }
 
 const Dropdown: FC<Props> = ({
@@ -76,6 +82,7 @@ const Dropdown: FC<Props> = ({
     selectedId = -1,
     placeholder,
     width = 'medium',
+    error,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -115,6 +122,7 @@ const Dropdown: FC<Props> = ({
                     ))}
                 </DropdownMenu>
             )}
+            {error && <Error>{error}</Error>}
         </DropdownContainer>
     );
 };

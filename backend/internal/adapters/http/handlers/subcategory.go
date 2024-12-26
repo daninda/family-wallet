@@ -28,6 +28,7 @@ func (s *Subcategory) New(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "Could not decode body", http.StatusBadRequest)
 		return
 	}
@@ -50,6 +51,7 @@ func (s *Subcategory) New(w http.ResponseWriter, r *http.Request) {
 	isAdmin, err := s.household.IsAdmin(userId)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "User not found", http.StatusTeapot)
 		return
 	}
@@ -73,9 +75,10 @@ func (s *Subcategory) New(w http.ResponseWriter, r *http.Request) {
 
 func (s *Subcategory) GetAll(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value(middlewares.User_id).(int)
-	categoryId, err := util.GetIntPathParam(r, "category_id")
+	categoryId, err := util.GetIntQueryParam(r, "category_id")
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
@@ -83,6 +86,7 @@ func (s *Subcategory) GetAll(w http.ResponseWriter, r *http.Request) {
 	household, err := s.household.GetHousehold(userId)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "User not found", http.StatusTeapot)
 		return
 	}
@@ -90,6 +94,7 @@ func (s *Subcategory) GetAll(w http.ResponseWriter, r *http.Request) {
 	hasCategory, err := s.household.HasCategory(household.Id, categoryId)
 
 	if err != nil || !hasCategory {
+		log.Println(err.Error())
 		http.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
@@ -97,6 +102,7 @@ func (s *Subcategory) GetAll(w http.ResponseWriter, r *http.Request) {
 	subcategories, err := s.subcategory.GetAll(categoryId)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -111,6 +117,7 @@ func (s *Subcategory) Delete(w http.ResponseWriter, r *http.Request) {
 	isAdmin, err := s.household.IsAdmin(userId)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "User not found", http.StatusTeapot)
 		return
 	}
@@ -123,6 +130,7 @@ func (s *Subcategory) Delete(w http.ResponseWriter, r *http.Request) {
 	subcategoryId, err := util.GetIntPathParam(r, "subcategoryId")
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
@@ -130,6 +138,7 @@ func (s *Subcategory) Delete(w http.ResponseWriter, r *http.Request) {
 	err = s.subcategory.Delete(subcategoryId)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -143,6 +152,7 @@ func (s *Subcategory) Update(w http.ResponseWriter, r *http.Request) {
 	isAdmin, err := s.household.IsAdmin(userId)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "User not found", http.StatusTeapot)
 		return
 	}
@@ -156,6 +166,8 @@ func (s *Subcategory) Update(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&body)
 
 	if err != nil {
+		log.Println(err.Error())
+
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
@@ -163,6 +175,7 @@ func (s *Subcategory) Update(w http.ResponseWriter, r *http.Request) {
 	subcategoryId, err := util.GetIntPathParam(r, "subcategoryId")
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
@@ -176,6 +189,7 @@ func (s *Subcategory) Update(w http.ResponseWriter, r *http.Request) {
 	_, err = s.subcategory.Update(subcategoryId, &subcategory)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}

@@ -5,6 +5,7 @@ import { CategoryNetwork } from './category';
 import { RecordNetwork } from './record';
 import { SubcategoryNetwork } from './subcategory';
 import { MemberNetwork } from './member';
+import { UserNetwork } from './user';
 
 export class Network extends AbstractNetwork {
     auth = new AuthNetwork(this);
@@ -12,6 +13,7 @@ export class Network extends AbstractNetwork {
     record = new RecordNetwork(this);
     subcategory = new SubcategoryNetwork(this);
     member = new MemberNetwork(this);
+    user = new UserNetwork(this);
 
     constructor() {
         super();

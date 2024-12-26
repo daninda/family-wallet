@@ -180,6 +180,20 @@ const GetRecordsForView = (records: Record[]) => {
     return result;
 };
 
+const getTotalPrice = (records: Record[]) => {
+    return records.reduce((acc, record) => {
+        return acc + record.price;
+    }, 0);
+};
+
+export interface ExpenseForm {
+    categoryId: number;
+    subcategoryId: number;
+    description: string;
+    price: number;
+    date: string;
+}
+
 const Home: FC = () => {
     const navigate = useNavigate();
 
@@ -201,17 +215,66 @@ const Home: FC = () => {
         new Date().toLocaleDateString('en-CA')
     );
 
+    const [limitation, setLimitation] = useState(0);
+
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [categoryIdForAdd, setCategoryIdForAdd] = useState(-1);
     const [subcategoriesForAdd, setSubcategoriesForAdd] = useState<Category[]>(
         []
     );
+
+    const [categoryIdForAdd, setCategoryIdForAdd] = useState(-1);
     const [subcategoryIdForAdd, setSubcategoryIdForAdd] = useState(-1);
     const [descriptionForAdd, setDescriptionForAdd] = useState('');
     const [costForAdd, setCostForAdd] = useState(0);
     const [dateForAdd, setDateForAdd] = useState('');
 
+    const [categoryIdForAddError, setCategoryIdForAddError] = useState('');
+    const [subcategoryIdForAddError, setSubcategoryIdForAddError] =
+        useState('');
+    const [descriptionForAddError, setDescriptionForAddError] = useState('');
+    const [costForAddError, setCostForAddError] = useState('');
+    const [dateForAddError, setDateForAddError] = useState('');
+
+    const clearErrors = () => {
+        setCategoryIdForAddError('');
+        setSubcategoryIdForAddError('');
+        setDescriptionForAddError('');
+        setCostForAddError('');
+        setDateForAddError('');
+    };
+
     const handleAddExpense = () => {
+        clearErrors();
+
+        let hasError = false;
+
+        if (categoryIdForAdd === -1) {
+            setCategoryIdForAddError('Выберите категорию');
+            hasError = true;
+        }
+        if (subcategoryIdForAdd === -1) {
+            setSubcategoryIdForAddError('Выберите подкатегорию');
+            hasError = true;
+        }
+        if (descriptionForAdd.length < 1 || descriptionForAdd.length > 256) {
+            setDescriptionForAddError(
+                'Введите описание (от 1 до 256 символов)'
+            );
+            hasError = true;
+        }
+        if (!costForAdd || costForAdd < 1 || costForAdd > 100000) {
+            setCostForAddError('Введите стоимость (от 1 до 100000 рублей)');
+            hasError = true;
+        }
+        if (dateForAdd === '') {
+            setDateForAddError('Введите корректную дату');
+            hasError = true;
+        }
+
+        if (hasError) {
+            return;
+        }
+
         network.record
             .create({
                 subсategoryId: subcategoryIdForAdd,
@@ -280,6 +343,13 @@ const Home: FC = () => {
                 setRecordsLoading(false);
             }
         );
+
+        network.user.get().then(
+            (response) => {
+                setLimitation(response.limitation);
+            },
+            () => {}
+        );
     }, []);
 
     useEffect(() => {
@@ -329,9 +399,15 @@ const Home: FC = () => {
     return (
         <Wrapper>
             <PageWrapper>
-                <ExpenseAlert>
-                    Ваш лимит трат превышен: 25 000 / 20 000
-                </ExpenseAlert>
+                {records &&
+                    records.length > 0 &&
+                    limitation > 0 &&
+                    getTotalPrice(records) > limitation && (
+                        <ExpenseAlert>
+                            Ваш лимит трат превышен: {getTotalPrice(records)} /{' '}
+                            {limitation}
+                        </ExpenseAlert>
+                    )}
                 {!categoriesLoading && (
                     <CategorySelector
                         categories={categories || []}
@@ -506,9 +582,13 @@ const Home: FC = () => {
                                     placeholder="Выберите категорию"
                                     width="wide"
                                     selectedId={categoryIdForAdd}
-                                    onSelectId={(categoryId) =>
-                                        setCategoryIdForAdd(categoryId)
-                                    }
+                                    onSelectId={(categoryId) => {
+                                        setCategoryIdForAdd(categoryId);
+                                        if (categoryIdForAddError) {
+                                            setCategoryIdForAddError('');
+                                        }
+                                    }}
+                                    error={categoryIdForAddError}
                                 />
                             </div>
                             <div>
@@ -517,9 +597,13 @@ const Home: FC = () => {
                                     placeholder="Выберите подкатегорию"
                                     width="wide"
                                     selectedId={subcategoryIdForAdd}
-                                    onSelectId={(subcategoryId) =>
-                                        setSubcategoryIdForAdd(subcategoryId)
-                                    }
+                                    onSelectId={(subcategoryId) => {
+                                        setSubcategoryIdForAdd(subcategoryId);
+                                        if (subcategoryIdForAddError) {
+                                            setSubcategoryIdForAddError('');
+                                        }
+                                    }}
+                                    error={subcategoryIdForAddError}
                                 />
                             </div>
                             <div>
@@ -529,10 +613,14 @@ const Home: FC = () => {
                                     type="text"
                                     height="medium"
                                     isWide
-                                    onChange={(e) =>
-                                        setDescriptionForAdd(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        setDescriptionForAdd(e.target.value);
+                                        if (descriptionForAddError) {
+                                            setDescriptionForAddError('');
+                                        }
+                                    }}
                                     value={descriptionForAdd}
+                                    error={descriptionForAddError}
                                 />
                             </div>
                             <div>
@@ -542,12 +630,16 @@ const Home: FC = () => {
                                     type="number"
                                     height="medium"
                                     isWide
-                                    onChange={(e) =>
+                                    onChange={(e) => {
                                         setCostForAdd(
                                             Number.parseInt(e.target.value)
-                                        )
-                                    }
+                                        );
+                                        if (costForAddError) {
+                                            setCostForAddError('');
+                                        }
+                                    }}
                                     value={costForAdd.toString()}
+                                    error={costForAddError}
                                 />
                             </div>
                             <div>
@@ -557,10 +649,15 @@ const Home: FC = () => {
                                     type="datetime-local"
                                     height="medium"
                                     isWide
-                                    onChange={(e) =>
-                                        setDateForAdd(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        setDateForAdd(e.target.value);
+
+                                        if (dateForAddError) {
+                                            setDateForAddError('');
+                                        }
+                                    }}
                                     value={dateForAdd}
+                                    error={dateForAddError}
                                 />
                             </div>
                             <Buttons>
