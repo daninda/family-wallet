@@ -6,7 +6,6 @@ import (
 	"family-wallet/internal/services"
 	"family-wallet/internal/util"
 	"fmt"
-	"strconv"
 
 	"family-wallet/internal/services/dto"
 	"net/http"
@@ -217,26 +216,16 @@ func (m *Member) SetLimit(w http.ResponseWriter, r *http.Request)  {
 	}
 
 	memberId, err := util.GetIntPathParam(r, "id")
-	limitParam := r.URL.Query().Get("limit")
 
 	if err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
-	if limitParam == "" {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
+	var limit int
+	json.NewDecoder(r.Body).Decode(&limit)
 
-	limit, err := strconv.Atoi(limitParam)
-
-	if err != nil {
-		fmt.Println("Provided limit is not a number: ", limitParam)
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
+	println(limit)
 	household, err := m.household.GetHousehold(userId)
 
 	if err != nil {

@@ -34,6 +34,7 @@ type Props = {
     id: number;
     name: string;
     onClick: (id: number) => void;
+    onReject: (id: number) => void;
 };
 
 export function RequestCard(props: Props) {
@@ -49,7 +50,10 @@ export function RequestCard(props: Props) {
                     />
                 </IconButton>
                 <IconButton>
-                    <AiOutlineCloseCircle size={32} />
+                    <AiOutlineCloseCircle
+                        size={32}
+                        onClick={() => props.onReject(id)}
+                    />
                 </IconButton>
             </CandidatActions>
         </Candidat>

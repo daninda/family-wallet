@@ -52,10 +52,12 @@ type Props = {
     onKick: (id: number) => void;
     onUnlimited: (id: number) => void;
     onSetLimit: (id: number, limit: number) => void;
+    onLimitChange: (id: number, limit?: number) => void;
 };
 
 export function MemberCard(props: Props) {
-    const { id, title, limit, onKick, onUnlimited, onSetLimit } = props;
+    const { id, title, limit, onKick, onUnlimited, onSetLimit, onLimitChange } =
+        props;
 
     return (
         <Member>
@@ -65,6 +67,32 @@ export function MemberCard(props: Props) {
                     label="Лимит трат"
                     type="number"
                     value={limit ? String(limit) : ''}
+                    onKeyDown={(e) => {
+                        const good = [
+                            '0',
+                            '1',
+                            '2',
+                            '3',
+                            '4',
+                            '5',
+                            '6',
+                            '7',
+                            '8',
+                            '9',
+                            'Backspace',
+                        ];
+                        if (!good.includes(e.key)) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    }}
+                    onChange={(e) => {
+                        const limit = Number(e.target.value);
+                        if (!Number.isNaN(limit)) {
+                            onLimitChange(id, limit);
+                        }
+                        onLimitChange(id, limit);
+                    }}
                 />
                 <LimitButtons>
                     <Button

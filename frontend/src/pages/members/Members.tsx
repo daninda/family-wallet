@@ -48,7 +48,7 @@ export function Members() {
     const [joinRequests, setJoinRequests] = useState<User[]>([]);
     const [members, setMembers] = useState<User[]>([]);
 
-    const [limits, setLimits] = useState<number[]>([]);
+    const [limits, setLimits] = useState<(number | undefined)[]>([]);
 
     useEffect(() => {
         network.member.familyCode().then(setFamilyCode);
@@ -60,9 +60,20 @@ export function Members() {
     }, []);
 
     const acceptUser = (userId: number) => {
-        network.member.acceptRequest(userId).then(() => {
+        return network.member.acceptRequest(userId).then(() => {
             network.member.joinRequests().then(setJoinRequests);
         });
+    };
+
+    const requestMembers = () => {
+        network.member.familyMembers().then((data) => {
+            setMembers(data);
+            setLimits(data.map((m) => m.limitation));
+        });
+    };
+
+    const requestRequests = () => {
+        return network.member.joinRequests().then(setJoinRequests);
     };
 
     return (
@@ -99,19 +110,27 @@ export function Members() {
                 {members && members.length > 0 && (
                     <SectionTitle>Список участников</SectionTitle>
                 )}
-                {(members || []).map((user) => (
+                {(members || []).map((user, i) => (
                     <MemberCard
                         key={user.id}
                         id={user.id}
                         title={user.name}
+                        limit={limits[i]}
                         onKick={(id) =>
-                            network.member
-                                .kickUser(id)
-                                .then(() => alert('kicked'))
+                            network.member.kickUser(id).then(requestMembers)
                         }
-                        onUnlimited={(id) => network.member.removeLimit(id)}
+                        onLimitChange={(id, limit) => {
+                            const clone = [...limits];
+                            clone[i] = limit;
+                            setLimits(clone);
+                        }}
+                        onUnlimited={(id) =>
+                            network.member.removeLimit(id).then(requestMembers)
+                        }
                         onSetLimit={(id, limit) =>
-                            network.member.changeLimit(id, limit)
+                            network.member
+                                .changeLimit(id, limit)
+                                .then(requestMembers)
                         }
                     />
                 ))}
@@ -124,7 +143,13 @@ export function Members() {
                         key={user.id}
                         id={user.id}
                         name={user.name}
-                        onClick={(id) => acceptUser(id)}
+                        onClick={(id) => acceptUser(id).then(requestMembers)}
+                        onReject={(id) =>
+                            network.member
+                                .rejectRequest(id)
+                                .then(requestRequests)
+                                .then(requestMembers)
+                        }
                     />
                 ))}
             </PageWrapper>
