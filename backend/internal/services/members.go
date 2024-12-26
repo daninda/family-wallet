@@ -59,8 +59,22 @@ func (m *Members) AcceptRequest(householdId int, userId int) error {
 	return err
 }
 
-func (s *Subcategory) Delete(id int) error {
-	_, err := s.db.Exec("DELETE FROM subcategories WHERE id = $1", id)
+func (m *Members) SetLimit(household_id int, userId int, limit int) error {
+	_, err := m.db.Exec("UPDATE users SET limit = $1 WHERE id = $2 AND household_id = $3", limit, userId, household_id)
+	return err
+}
+
+func (m *Members) RemoveLimit(household_id int, userId int) error {
+	_, err := m.db.Exec("UPDATE users SET limit = null WHERE id = $1 AND household_id = $2", userId, household_id)
+	return err
+}
+
+func (m *Members) RejectRequest(household_id int, id int) error {
+	return m.Delete(household_id, id)
+}
+
+func (s *Members) Delete(household_id int, id int) error {
+	_, err := s.db.Exec("DELETE FROM users WHERE id = $1 AND household_id = $2", id, household_id)
 	if err != nil {
 		return err
 	}

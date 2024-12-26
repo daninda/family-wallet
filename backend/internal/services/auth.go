@@ -33,12 +33,15 @@ func (a *Auth) Register(
 
 	var household entities.Household
 
+	// var householdId int
 	if input.IsAdmin {
 		row := a.db.QueryRowx(`
-			INSERT INTO households (id) VALUES (DEFAULT)
+			INSERT INTO households (id) VALUES (DEFAULT) RETURNING id
 		`)
 
 		if err := row.StructScan(&household); err != nil {
+			println("error! could not create household: ")
+			println(err.Error())
 			return nil, errors.New("could not create household")
 		}
 	} else {
@@ -125,3 +128,19 @@ func (a *Auth) GetUser(id int) (*dto.UserOutput, error) {
 
 	return &dto.UserOutput{Id: user.Id, Name: user.Name, Email: user.Email, Accepted: user.Accepted, IsAdmin: user.IsAdmin, HouseholdId: user.HouseholdId}, nil
 }
+
+func (a *Auth) Accepted(id int) (bool, error) {
+	row := a.db.QueryRowx(`
+		SELECT accepted FROM users WHERE id = $1
+	`, id)
+
+	var accepted bool
+
+	if err := row.Scan(&accepted); err != nil {
+		return false, errors.New("user not found")
+	}
+
+
+	return accepted, nil
+}
+

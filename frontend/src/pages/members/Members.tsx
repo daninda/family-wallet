@@ -48,10 +48,15 @@ export function Members() {
     const [joinRequests, setJoinRequests] = useState<User[]>([]);
     const [members, setMembers] = useState<User[]>([]);
 
+    const [limits, setLimits] = useState<number[]>([]);
+
     useEffect(() => {
         network.member.familyCode().then(setFamilyCode);
         network.member.joinRequests().then(setJoinRequests);
-        network.member.familyMembers().then(setMembers);
+        network.member.familyMembers().then((data) => {
+            setMembers(data);
+            setLimits(data.map((m) => m.limitation));
+        });
     }, []);
 
     const acceptUser = (userId: number) => {
@@ -95,7 +100,20 @@ export function Members() {
                     <SectionTitle>Список участников</SectionTitle>
                 )}
                 {(members || []).map((user) => (
-                    <MemberCard key={user.id} title={user.name} />
+                    <MemberCard
+                        key={user.id}
+                        id={user.id}
+                        title={user.name}
+                        onKick={(id) =>
+                            network.member
+                                .kickUser(id)
+                                .then(() => alert('kicked'))
+                        }
+                        onUnlimited={(id) => network.member.removeLimit(id)}
+                        onSetLimit={(id, limit) =>
+                            network.member.changeLimit(id, limit)
+                        }
+                    />
                 ))}
 
                 {joinRequests && joinRequests.length > 0 && (

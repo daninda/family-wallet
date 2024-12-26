@@ -32,4 +32,9 @@ export class AuthNetwork extends AbstractSubNetwork {
         });
         return response.data;
     }
+
+    accepted = async () => {
+        const response = await this.axios().get<boolean>('/auth/accepted');
+        return response.data;
+    };
 }

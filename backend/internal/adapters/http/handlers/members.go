@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"family-wallet/internal/middlewares"
 	"family-wallet/internal/services"
+	"family-wallet/internal/util"
+	"fmt"
+	"strconv"
 
 	"family-wallet/internal/services/dto"
 	"net/http"
@@ -154,4 +157,163 @@ func (m *Member) AcceptRequest(w http.ResponseWriter, r *http.Request)  {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (m *Member) RejectRequest(w http.ResponseWriter, r *http.Request)  {
+	userId := r.Context().Value(middlewares.User_id).(int)
+	memberId, err := util.GetIntPathParam(r, "id")
+
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	isAdmin, err := m.household.IsAdmin(userId)
+
+	if err != nil {
+		println("Could not determine user's household. That should never happen")
+		http.Error(w, "User not found", http.StatusTeapot)
+		return
+	}
+
+	if !isAdmin {
+		http.Error(w, "Permission denied", http.StatusUnauthorized)
+		return
+	}
+
+	household, err := m.household.GetHousehold(userId)
+
+	if err != nil {
+		println("Could not find household for user. That should never happen")
+		http.Error(w, "Household not found", http.StatusTeapot)
+		return
+	}
+
+	err = m.members.RejectRequest(household.Id, memberId)
+
+	if err != nil {
+		fmt.Printf("Could not reject request: %s\n", err.Error())
+		http.Error(w, "Could not reject request", http.StatusTeapot)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Print("Rejected request")
+}
+
+func (m *Member) SetLimit(w http.ResponseWriter, r *http.Request)  {
+	userId := r.Context().Value(middlewares.User_id).(int)
+
+	isAdmin, err := m.household.IsAdmin(userId)
+
+	if err != nil {
+		http.Error(w, "User not found", http.StatusTeapot)
+		return
+	}
+
+	if !isAdmin {
+		http.Error(w, "Permission denied", http.StatusUnauthorized)
+		return
+	}
+
+	memberId, err := util.GetIntPathParam(r, "id")
+	limitParam := r.URL.Query().Get("limit")
+
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if limitParam == "" {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	limit, err := strconv.Atoi(limitParam)
+
+	if err != nil {
+		fmt.Println("Provided limit is not a number: ", limitParam)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	household, err := m.household.GetHousehold(userId)
+
+	if err != nil {
+		http.Error(w, "User not found", http.StatusTeapot)
+		return
+	}
+
+	m.members.SetLimit(household.Id, memberId, limit)
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (m *Member) RemoveLimit(w http.ResponseWriter, r *http.Request)  {
+	userId := r.Context().Value(middlewares.User_id).(int)
+
+	isAdmin, err := m.household.IsAdmin(userId)
+
+	if err != nil {
+		http.Error(w, "User not found", http.StatusTeapot)
+		return
+	}
+
+	if !isAdmin {
+		http.Error(w, "Permission denied", http.StatusUnauthorized)
+		return
+	}
+
+	memberId, err := util.GetIntPathParam(r, "id")
+
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	household, err := m.household.GetHousehold(userId)
+
+	if err != nil {
+		http.Error(w, "User not found", http.StatusTeapot)
+		return
+	}
+
+	m.members.RemoveLimit(household.Id, memberId)
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (m *Member) Kick(w http.ResponseWriter, r *http.Request)  {
+	userId := r.Context().Value(middlewares.User_id).(int)
+	memberId, err := util.GetIntPathParam(r, "id")
+
+	result := r.URL.Query().Encode()
+	println(result)
+	if err != nil {
+		print("Error: ")
+		println(err.Error())
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	isAdmin, err := m.household.IsAdmin(userId)
+
+	
+	if err != nil {
+		http.Error(w, "User not found", http.StatusTeapot)
+		return
+	}
+
+	if !isAdmin {
+		http.Error(w, "Permission denied", http.StatusUnauthorized)
+		return
+	}
+	household, err :=m.household.GetHousehold(userId)
+	
+	if err != nil {
+		http.Error(w, "User not found", http.StatusTeapot)
+		return
+	}
+
+	m.members.Delete(household.Id, memberId);
 }

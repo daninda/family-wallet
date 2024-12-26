@@ -4,16 +4,18 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 func GetIntPathParam(r *http.Request, name string) (int, error) {
-	categoryId := r.URL.Query().Get(name)
+	param := mux.Vars(r)[name]
 
-	if categoryId == "" {
+	if param == "" {
 		return -1, errors.New("param is required")
 	}
 
-	categoryIdInt, err := strconv.Atoi(categoryId)
+	categoryIdInt, err := strconv.Atoi(param)
 	if err != nil {
 		return -1, errors.New("param must be an integer")
 	}
@@ -41,3 +43,4 @@ func GetSort(sortString string) int {
 		return DateAsc
 	}
 }
+

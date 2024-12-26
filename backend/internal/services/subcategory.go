@@ -39,3 +39,8 @@ func (s *Subcategory) Update(id int, subcategory *entities.Subcategory) (*entiti
 	err := row.Scan(&newId)
 	return &entities.Subcategory{Id: newId, Name: subcategory.Name, CategoryId: subcategory.CategoryId}, err
 }
+
+func (s *Subcategory) Delete(id int) error {
+	_, err := s.db.Exec("DELETE FROM subcategories WHERE id = $1", id)
+	return err
+}

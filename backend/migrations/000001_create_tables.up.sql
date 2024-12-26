@@ -6,6 +6,7 @@ create table users (
     id serial primary key,
     name text not null,
     email text not null,
+    limitation integer DEFAULT null,
     password_hash text not null,
     is_admin boolean not null,
     accepted boolean not null,

@@ -117,3 +117,26 @@ func (a *Auth) CheckToken(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
 }
+
+func (a *Auth) Accepted(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("Authorization")
+
+	user_id, err := a.jwtService.ValidateToken(token)
+
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	accepted, err := a.auth.Accepted(user_id)
+
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(accepted)
+}

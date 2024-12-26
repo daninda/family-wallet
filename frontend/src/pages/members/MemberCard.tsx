@@ -46,29 +46,44 @@ const MemberActions = styled.div`
 `;
 
 type Props = {
+    id: number;
     title: string;
+    limit?: number;
+    onKick: (id: number) => void;
+    onUnlimited: (id: number) => void;
+    onSetLimit: (id: number, limit: number) => void;
 };
 
 export function MemberCard(props: Props) {
-    const { title } = props;
+    const { id, title, limit, onKick, onUnlimited, onSetLimit } = props;
 
     return (
         <Member>
             <MemberTitle>{title}</MemberTitle>
             <Limit>
-                <Input label="Лимит трат" type="number" />
+                <Input
+                    label="Лимит трат"
+                    type="number"
+                    value={limit ? String(limit) : ''}
+                />
                 <LimitButtons>
                     <Button
                         color="green"
                         height="large"
                         width="content"
                         title="Безлимит"
+                        onClick={() => onUnlimited(id)}
                     />
                     <Button
                         color="green"
                         height="large"
                         width="content"
                         title="Утвердить"
+                        onClick={() => {
+                            if (limit != null) {
+                                onSetLimit(id, limit);
+                            }
+                        }}
                     />
                 </LimitButtons>
             </Limit>
@@ -78,6 +93,7 @@ export function MemberCard(props: Props) {
                     height="large"
                     width="content"
                     title="Выгнать"
+                    onClick={() => onKick(id)}
                 />
                 <Button
                     color="green"

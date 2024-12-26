@@ -34,4 +34,16 @@ export class MemberNetwork extends AbstractSubNetwork {
             .get<User[]>('/members/family-members')
             .then((response) => response.data);
     }
+
+    kickUser = (userId: number) => {
+        return this.axios().delete(`/members/${userId}`);
+    };
+
+    changeLimit = (userId: number, limit: number) => {
+        return this.axios().post(`/members/${userId}/limit`, { limit });
+    };
+
+    removeLimit = (userId: number) => {
+        return this.axios().delete(`/members/${userId}/limit-remove`);
+    };
 }
