@@ -6,12 +6,12 @@ import { main } from './themes';
 import GlobalStyles from './themes/global';
 import { network } from './services/network/network';
 import { createTheme } from '@mui/material';
+import { User } from './models/auth';
 
 const App: FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isAuth, setIsAuth] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [username, setUsername] = useState('');
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -20,10 +20,7 @@ const App: FC = () => {
             network.auth.check({ token }).then(
                 (user) => {
                     setIsAuth(true);
-                    if (user.isAdmin) {
-                        setIsAdmin(true);
-                    }
-                    setUsername(user.name);
+                    setUser(user);
                     setIsLoading(false);
                 },
                 () => {
@@ -54,8 +51,7 @@ const App: FC = () => {
                         <Router
                             isLoading={isLoading}
                             isAuth={isAuth}
-                            isAdmin={isAdmin}
-                            username={username}
+                            user={user}
                         />
                     </BrowserRouter>
                 </div>

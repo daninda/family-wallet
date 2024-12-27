@@ -1,20 +1,25 @@
-import { useEffect } from 'react';
-import { network } from '../services/network/network';
-import { useNavigate } from 'react-router-dom';
+import { FC } from 'react';
+import styled from '@emotion/styled';
 
-export function Wait() {
-    const nav = useNavigate();
+const PageWrapper = styled.div`
+    height: calc(100vh - 196px);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-    useEffect(() => {
-        network.auth.accepted().then((accepted) => {
-            if (accepted) {
-                nav('/');
-            }
-        });
-    }, [nav]);
+    font-size: 32px;
+    font-weight: 600;
+    text-align: center;
+    color: ${({ theme }) => theme.colors.primaryText};
+`;
+
+const Wait: FC = () => {
     return (
-        <div>
-            <h1>Wait</h1>
-        </div>
+        <PageWrapper>
+            Ваша заявка на вступление в данный момент находится в обработке
+        </PageWrapper>
     );
-}
+};
+
+export default Wait;

@@ -9,15 +9,16 @@ import Home from '../pages/home/Home';
 import Members from '../pages/members/Members';
 import Categories from '../pages/categories/Categories';
 import Statistics from '../pages/statistics/Statistics';
+import { User } from '../models/auth';
+import Wait from '../pages/Wait';
 
 interface Props {
     isAuth: boolean;
-    isAdmin: boolean;
     isLoading: boolean;
-    username: string;
+    user: User | null;
 }
 
-const Router: FC<Props> = ({ isAdmin, isAuth, isLoading, username }) => {
+const Router: FC<Props> = ({ isAuth, isLoading, user }) => {
     if (isLoading) {
         return <Loader />;
     } else if (!isAuth) {
@@ -30,13 +31,22 @@ const Router: FC<Props> = ({ isAdmin, isAuth, isLoading, username }) => {
                 </Route>
             </Routes>
         );
+    } else if (!user?.accepted) {
+        return (
+            <Routes>
+                <Route element={<Main user={user} />}>
+                    <Route path="/" element={<Wait />} />
+                    <Route path="*" element={<Navigate to="/" />} />
+                </Route>
+            </Routes>
+        );
     } else {
         return (
             <Routes>
-                <Route element={<Main isAdmin={isAdmin} username={username} />}>
+                <Route element={<Main user={user} />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/statistics" element={<Statistics />} />
-                    {isAdmin && (
+                    {user?.isAdmin && (
                         <>
                             <Route path="/members" element={<Members />} />
                             <Route
