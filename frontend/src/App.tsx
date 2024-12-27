@@ -11,6 +11,7 @@ const App: FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isAuth, setIsAuth] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [username, setUsername] = useState('');
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -22,9 +23,8 @@ const App: FC = () => {
                     if (user.isAdmin) {
                         setIsAdmin(true);
                     }
+                    setUsername(user.name);
                     setIsLoading(false);
-
-                    console.log(user);
                 },
                 () => {
                     setIsLoading(false);
@@ -55,6 +55,7 @@ const App: FC = () => {
                             isLoading={isLoading}
                             isAuth={isAuth}
                             isAdmin={isAdmin}
+                            username={username}
                         />
                     </BrowserRouter>
                 </div>

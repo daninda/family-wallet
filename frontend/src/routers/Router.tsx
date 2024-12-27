@@ -14,9 +14,10 @@ interface Props {
     isAuth: boolean;
     isAdmin: boolean;
     isLoading: boolean;
+    username: string;
 }
 
-const Router: FC<Props> = ({ isAdmin, isAuth, isLoading }) => {
+const Router: FC<Props> = ({ isAdmin, isAuth, isLoading, username }) => {
     if (isLoading) {
         return <Loader />;
     } else if (!isAuth) {
@@ -32,7 +33,7 @@ const Router: FC<Props> = ({ isAdmin, isAuth, isLoading }) => {
     } else {
         return (
             <Routes>
-                <Route element={<Main isAdmin={isAdmin} />}>
+                <Route element={<Main isAdmin={isAdmin} username={username} />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/statistics" element={<Statistics />} />
                     {isAdmin && (

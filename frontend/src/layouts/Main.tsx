@@ -10,12 +10,13 @@ const MainWrapper = styled.main`
 
 interface Props {
     isAdmin: boolean;
+    username: string;
 }
 
-const Main: FC<Props> = ({ isAdmin }) => {
+const Main: FC<Props> = ({ isAdmin, username }) => {
     return (
         <>
-            <Header username="Danila" isAdmin={isAdmin} />
+            <Header username={username} isAdmin={isAdmin} />
             <MainWrapper>
                 <Outlet />
             </MainWrapper>
