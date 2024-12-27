@@ -553,7 +553,10 @@ const Home: FC = () => {
                                                     ? parseInt(e.target.value)
                                                     : 0
                                             );
-                                            if (priceFromError) {
+                                            if (
+                                                priceFromError ||
+                                                priceToError
+                                            ) {
                                                 clearFilterErrors();
                                             }
                                         }}
@@ -568,7 +571,10 @@ const Home: FC = () => {
                                                     ? parseInt(e.target.value)
                                                     : 0
                                             );
-                                            if (priceToError) {
+                                            if (
+                                                priceFromError ||
+                                                priceToError
+                                            ) {
                                                 clearFilterErrors();
                                             }
                                         }}

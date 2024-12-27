@@ -27,11 +27,11 @@ func (a *Auth) Register(
 
 	var existsId int
 
-	if err := row.StructScan(&existsId); err == nil {
+	if err := row.Scan(&existsId); err == nil {
 		return nil, errors.New("user already exists")
 	}
 
-	var household entities.Household
+	var householdId int
 
 	// var householdId int
 	if input.IsAdmin {
@@ -39,21 +39,17 @@ func (a *Auth) Register(
 			INSERT INTO households (id) VALUES (DEFAULT) RETURNING id
 		`)
 
-		if err := row.StructScan(&household); err != nil {
+		if err := row.Scan(&householdId); err != nil {
 			println("error! could not create household: ")
 			println(err.Error())
 			return nil, errors.New("could not create household")
 		}
 	} else {
-		print("user requested to join household '")
-		print(input.HouseholdId)
-		println("'")
 		row := a.db.QueryRowx(`
-			SELECT * FROM households WHERE id = $1
+			SELECT id FROM households WHERE id = $1
 		`, input.HouseholdId)
 
-		println(row)
-		if err := row.StructScan(&household); err != nil {
+		if err := row.Scan(&householdId); err != nil {
 			println(err.Error())
 			return nil, errors.New("could not find household")
 		}
@@ -69,7 +65,7 @@ func (a *Auth) Register(
 		Accepted:     false,
 		IsAdmin:      input.IsAdmin,
 		Limitation:   nil,
-		HouseholdId:  household.Id,
+		HouseholdId:  householdId,
 	}
 
 	row = a.db.QueryRowx(`
@@ -140,7 +136,5 @@ func (a *Auth) Accepted(id int) (bool, error) {
 		return false, errors.New("user not found")
 	}
 
-
 	return accepted, nil
 }
-

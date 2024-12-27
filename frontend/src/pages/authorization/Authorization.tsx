@@ -1,9 +1,11 @@
-import { useState } from 'react';
 import styled from '@emotion/styled';
 import Input from '../../components/inputs/Input';
 import Button from '../../components/buttons/Button';
 import Link from '../../components/links/Link';
 import { network } from '../../services/network/network';
+import { useForm } from 'react-hook-form';
+import { ToastContainer } from 'react-toastify';
+import { showErrorToast } from '../../utils/utils';
 
 const PageContainer = styled.div`
     display: flex;
@@ -42,20 +44,31 @@ const Header = styled.h2`
     height: 100%;
 `;
 
-const Authorization: React.FC = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+interface LoginForm {
+    email: string;
+    password: string;
+}
 
-    const handleAuthorize = () => {
+const Authorization: React.FC = () => {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<LoginForm>();
+
+    const handleLogin = (form: LoginForm) => {
         network.auth
             .login({
-                email,
-                password,
+                email: form.email,
+                password: form.password,
             })
             .then((res) => {
                 localStorage.setItem('token', res.token);
                 localStorage.setItem('user', JSON.stringify(res.user));
                 window.location.reload();
+            })
+            .catch(() => {
+                showErrorToast('Неправильный логин или пароль');
             });
     };
 
@@ -63,37 +76,50 @@ const Authorization: React.FC = () => {
         <PageContainer>
             <FormContainer>
                 <Header>Вход в аккаунт</Header>
-                <AnotherContainer>
-                    <Input
-                        isWide
-                        label="Эл. почта"
-                        type="email"
-                        placeholder="Введите вашу эл. почту"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <Input
-                        isWide
-                        label="Пароль"
-                        type="password"
-                        placeholder="Введите ваш пароль"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <Button
-                        width="wide"
-                        onClick={() => {
-                            handleAuthorize();
-                        }}
-                        title="Войти"
-                    />
-                    <Link
-                        to="/signup"
-                        description="Еще нет аккаунта?"
-                        text="Зарегистрироваться"
-                    />
-                </AnotherContainer>
+                <form onSubmit={handleSubmit(handleLogin)}>
+                    <AnotherContainer>
+                        <Input
+                            isWide
+                            label="Эл. почта"
+                            type="email"
+                            placeholder="Введите вашу эл. почту"
+                            {...register('email', {
+                                required: 'Обязательно для заполнения',
+                                pattern: {
+                                    value: /\S+@\S+\.\S+/,
+                                    message: 'Почта не соотвествует формату',
+                                },
+                            })}
+                            error={errors.email?.message}
+                        />
+                        <Input
+                            isWide
+                            label="Пароль"
+                            type="password"
+                            placeholder="Введите ваш пароль"
+                            {...register('password', {
+                                required: 'Обязательно для заполнения',
+                                minLength: {
+                                    value: 8,
+                                    message: 'Минимум 8 символа',
+                                },
+                                maxLength: {
+                                    value: 16,
+                                    message: 'Максимум 16 символов',
+                                },
+                            })}
+                            error={errors.password?.message}
+                        />
+                        <Button width="wide" type="submit" title="Войти" />
+                        <Link
+                            to="/signup"
+                            description="Еще нет аккаунта?"
+                            text="Зарегистрироваться"
+                        />
+                    </AnotherContainer>
+                </form>
             </FormContainer>
+            <ToastContainer />
         </PageContainer>
     );
 };

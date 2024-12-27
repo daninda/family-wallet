@@ -5,6 +5,8 @@ import Button from '../../components/buttons/Button';
 import Link from '../../components/links/Link';
 import { network } from '../../services/network/network';
 import { useForm } from 'react-hook-form';
+import { showErrorToast } from '../../utils/utils';
+import { ToastContainer } from 'react-toastify';
 
 const PageContainer = styled.div`
     display: flex;
@@ -74,6 +76,19 @@ const Registration: React.FC = () => {
                 localStorage.setItem('token', res.token);
                 localStorage.setItem('user', JSON.stringify(res.user));
                 window.location.reload();
+            })
+            .catch((err) => {
+                if (
+                    (err.response.data as string).includes(
+                        'could not find household'
+                    )
+                ) {
+                    showErrorToast('Неверный код семьи');
+                } else {
+                    showErrorToast(
+                        'Пользователь с такой почтой уже зарегистрирован'
+                    );
+                }
             });
     };
 
@@ -110,7 +125,7 @@ const Registration: React.FC = () => {
                                 required: 'Обязательно для заполнения',
                                 pattern: {
                                     value: /\S+@\S+\.\S+/,
-                                    message: 'Почта несоотвествует формату',
+                                    message: 'Почта не соотвествует формату',
                                 },
                             })}
                             error={errors.email?.message}
@@ -159,6 +174,7 @@ const Registration: React.FC = () => {
                     </AnotherContainer>
                 </form>
             </FormContainer>
+            <ToastContainer />
         </PageContainer>
     );
 };
