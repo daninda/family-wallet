@@ -28,13 +28,12 @@ const Title = styled.h1`
 const Tools = styled.div`
     display: flex;
     justify-content: space-between;
-    margin-top: 16px;
+    margin-top: 32px;
 `;
 
 const Buttons = styled.div`
     display: flex;
     justify-content: space-between;
-    margin-top: 16px;
     column-gap: 16px;
 `;
 
@@ -152,7 +151,7 @@ const ExpenseAlert = styled.div`
     align-items: center;
     justify-content: center;
     height: 64px;
-    margin: 32px 0;
+    margin: 0 0 32px;
     background-color: ${({ theme }) => theme.colors.accent};
     font-size: 24px;
     font-weight: 600;
@@ -180,12 +179,6 @@ const GetRecordsForView = (records: Record[]) => {
     return result;
 };
 
-const getTotalPrice = (records: Record[]) => {
-    return records.reduce((acc, record) => {
-        return acc + record.price;
-    }, 0);
-};
-
 export interface ExpenseForm {
     categoryId: number;
     subcategoryId: number;
@@ -196,6 +189,8 @@ export interface ExpenseForm {
 
 const Home: FC = () => {
     const navigate = useNavigate();
+
+    const [total, setTotal] = useState(0);
 
     const [categoriesLoading, setCategoriesLoading] = useState(true);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -340,6 +335,10 @@ const Home: FC = () => {
     }, [categoryIdForAdd]);
 
     useEffect(() => {
+        network.record.getTotalByMonth().then((date) => {
+            setTotal(date);
+        });
+
         setCategoriesLoading(true);
         network.category.getAll().then(
             (response) => {
@@ -373,6 +372,13 @@ const Home: FC = () => {
     useEffect(() => {
         let hasError = false;
 
+        const now = new Date();
+        now.setHours(23, 59, 59, 999);
+        const from = new Date(dateFrom);
+        from.setHours(0, 0, 0, 0);
+        const to = new Date(dateTo);
+        to.setHours(23, 59, 59, 999);
+
         if (priceFrom < 0 || priceFrom > 100000 || isNaN(priceFrom)) {
             setPriceFromError('Введите корректную минимальную цену');
             hasError = true;
@@ -388,12 +394,9 @@ const Home: FC = () => {
             hasError = true;
         }
         if (
-            new Date(dateFrom).getTime() &&
-            new Date(dateTo).getTime() &&
-            (new Date(dateFrom).getTime() > new Date(dateTo).getTime() ||
-                new Date(dateFrom).getTime() < 0 ||
-                new Date(dateTo).getTime() >
-                    new Date(Date.now() + 1000 * 60 * 60 * 24).getTime())
+            from &&
+            to &&
+            (from > to || from.getTime() < 0 || to.getTime() > now.getTime())
         ) {
             setDateFromError('Введите корректные даты');
             hasError = true;
@@ -411,8 +414,8 @@ const Home: FC = () => {
                 sortBy: sorts.find((s) => s.id === sortId)?.value || 'date_asc',
                 minPrice: priceFrom,
                 maxPrice: priceTo,
-                from: new Date(dateFrom).getTime(),
-                to: new Date(dateTo).getTime(),
+                from: from.getTime(),
+                to: to.getTime(),
             })
             .then(
                 (response) => {
@@ -449,15 +452,12 @@ const Home: FC = () => {
     return (
         <Wrapper>
             <PageWrapper>
-                {records &&
-                    records.length > 0 &&
-                    limitation > 0 &&
-                    getTotalPrice(records) > limitation && (
-                        <ExpenseAlert>
-                            Ваш лимит трат превышен: {getTotalPrice(records)} /{' '}
-                            {limitation}
-                        </ExpenseAlert>
-                    )}
+                {limitation > 0 && total > limitation && (
+                    <ExpenseAlert>
+                        Ваш лимит трат в этом месяце превышен:{' '}
+                        {total.toLocaleString()} / {limitation} руб.
+                    </ExpenseAlert>
+                )}
                 {!categoriesLoading && (
                     <CategorySelector
                         categories={categories || []}

@@ -5,13 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import CategorySelector from '../../components/categorySelector/CategorySelector';
 import Input from '../../components/inputs/Input';
-import Dropdown from '../../components/dropdowns/Dropdown';
 import { LineChart, PieChart } from '@mui/x-charts';
 import { network } from '../../services/network/network';
-
 import { Record as RecordX } from '../../models/records';
 import { Category } from '../../models/categories';
 import { MenuItem, Select } from '@mui/material';
+import { Subcategory } from '../../models/subcategories';
 
 const PageWrapper = styled.div`
     padding-top: 38px;
@@ -76,56 +75,92 @@ const FilterItemTitle = styled.h3`
     font-weight: 600;
 `;
 
-const FilterItemInput = styled.div`
+const FilterItemInput = styled.div<{ two?: boolean }>`
     display: flex;
-    column-gap: 8px;
-    align-items: end;
+    flex-direction: ${({ two }) => (two ? 'column' : 'row')};
+    gap: 8px;
 `;
 
 const Statistics: FC = () => {
     const navigate = useNavigate();
 
     const [records, setRecords] = useState<RecordX[]>([]);
-    const [categoriesRequest, setCategoriesRequest] = useState<Category[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+    const [categoryId, setCategoryId] = useState(-1);
+
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState(
+        new Date().toLocaleDateString('en-CA')
+    );
+
+    const [dateFromError, setDateFromError] = useState('');
+    const [dateToError, setDateToError] = useState('');
 
     const [chart, setChart] = useState(0);
 
-    useEffect(() => {
-        network.category.getAll().then(setCategoriesRequest);
-    }, []);
-    const categories = [
-        {
-            id: 1,
-            name: 'Category 1',
-        },
-        {
-            id: 2,
-            name: 'Category 2',
-        },
-    ];
-
-    const [statisticsType, setStatisticsType] = useState(categories[0]);
-
-    const data = [
-        { name: 'Page A', value: 2444, uv: 4000, pv: 2400, amt: 2400 },
-        { name: 'Page B', value: 2832, uv: 3000, pv: 1398, amt: 2210 },
-        { name: 'Page C', value: 5311, uv: 2000, pv: 9800, amt: 2290 },
-        { name: 'Page D', value: 9521, uv: 2780, pv: 3908, amt: 2000 },
-        { name: 'Page E', value: 1111, uv: 1890, pv: 4800, amt: 2181 },
-    ];
+    const clearFilterErrors = () => {
+        setDateFromError('');
+        setDateToError('');
+    };
 
     useEffect(() => {
-        network.record.getAll({}).then(setRecords);
+        network.category.getAll().then((data) => {
+            setCategories(data == null ? [] : data);
+        });
     }, []);
 
-    const [showGood, setShowGood] = useState(false);
-
     useEffect(() => {
-        if (showGood) {
-            const timeout = setTimeout(() => setShowGood(false), 5000);
-            return () => clearTimeout(timeout);
+        let hasError = false;
+
+        const now = new Date();
+        now.setHours(23, 59, 59, 999);
+        const from = new Date(dateFrom);
+        from.setHours(0, 0, 0, 0);
+        const to = new Date(dateTo);
+        to.setHours(23, 59, 59, 999);
+
+        if (
+            from &&
+            to &&
+            (from > to || from.getTime() < 0 || to.getTime() > now.getTime())
+        ) {
+            setDateFromError('Введите корректные даты');
+            hasError = true;
         }
-    }, [showGood]);
+
+        if (hasError) {
+            return;
+        }
+
+        if (categoryId != -1) {
+            network.subcategory.getAll({ categoryId }).then((data) => {
+                setSubcategories(data == null ? [] : data);
+            });
+        }
+
+        network.record
+            .getAll({
+                categoryId,
+                from: from.getTime(),
+                to: to.getTime(),
+            })
+            .then((data) => {
+                if (categoryId != -1) {
+                    setRecords(
+                        data.map((record) => {
+                            return {
+                                ...record,
+                                categoryId: record.subcategoryId,
+                                category: record.subcategory,
+                            };
+                        })
+                    );
+                } else {
+                    setRecords(data == null ? [] : data);
+                }
+            });
+    }, [categoryId, dateFrom, dateTo]);
 
     const recordsForCategory: Record<number, RecordX[]> = {};
 
@@ -136,33 +171,9 @@ const Statistics: FC = () => {
         recordsForCategory[record.categoryId].push(record);
     }
 
-    if (records.length === 0) {
-        return (
-            <Wrapper>
-                <PageWrapper>
-                    <Title>Статистика</Title>
-                    <Tools>
-                        <Button
-                            color="white"
-                            height="large"
-                            width="medium"
-                            title="Назад"
-                            onClick={() => navigate('/')}
-                        />
-                    </Tools>
-                    <MainWrapper>
-                        <StatisticsWrapper>
-                            <h1>Записей нет</h1>
-                        </StatisticsWrapper>
-                    </MainWrapper>
-                </PageWrapper>
-            </Wrapper>
-        );
-    }
-
     const allDays = days(records);
 
-    const categoriesT = [];
+    const categoriesT: number[] = [];
     const recordsT = [];
     for (const [categoryId, records] of Object.entries(recordsForCategory)) {
         const groupedDays = groupByDay(records, allDays).map((day) => {
@@ -182,8 +193,11 @@ const Statistics: FC = () => {
     });
 
     const categoryName = (id: number): string => {
-        console.log(id);
-        return categoriesRequest.find((c) => c.id === id)?.name ?? 'def';
+        if (categoryId != -1) {
+            return subcategories.find((c) => c.id === id)?.name ?? '';
+        } else {
+            return categories.find((c) => c.id === id)?.name ?? '';
+        }
     };
 
     const series = recordsT.map((r, i) => ({
@@ -194,7 +208,13 @@ const Statistics: FC = () => {
     return (
         <Wrapper>
             <PageWrapper>
-                <CategorySelector categories={categories} onSelect={() => {}} />
+                <CategorySelector
+                    categories={categories}
+                    selectedId={categoryId}
+                    onSelectId={(categoryId) => {
+                        setCategoryId(categoryId);
+                    }}
+                />
                 <Title>Статистика</Title>
                 <Tools>
                     <Button
@@ -220,6 +240,7 @@ const Statistics: FC = () => {
                             ></PieChart>
                         ) : (
                             <LineChart
+                                height={400}
                                 series={series}
                                 yAxis={[
                                     {
@@ -228,20 +249,21 @@ const Statistics: FC = () => {
                                 ]}
                                 xAxis={[
                                     {
-                                        data: allDays.map((d) => new Date(+d)),
-                                        valueFormatter: (d) =>
-                                            new Date(+d).toLocaleDateString(
-                                                'ru-RU'
-                                            ),
+                                        dataKey: 'date',
+                                        data: allDays,
+                                        valueFormatter: (d) => {
+                                            return new Intl.DateTimeFormat(
+                                                'ru-RU',
+                                                {
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                }
+                                            ).format(new Date(+d));
+                                        },
                                         label: 'Дата',
                                     },
                                 ]}
-                                //     allDays.map((d) => ({
-                                //     data: allDays,
-                                //     label: new Date(+d).toLocaleDateString(
-                                //         'ru-RU'
-                                //     ),
-                                // }))}
                             ></LineChart>
                         )}
                     </StatisticsWrapper>
@@ -250,11 +272,33 @@ const Statistics: FC = () => {
                         <Filters>
                             <FilterItem>
                                 <FilterItemTitle>Дата</FilterItemTitle>
-                                <FilterItemInput>
+                                <FilterItemInput two>
                                     от:
-                                    <Input height="small" />
+                                    <Input
+                                        type="date"
+                                        height="small"
+                                        isWide
+                                        value={dateFrom}
+                                        onChange={(e) => {
+                                            setDateFrom(e.target.value);
+                                            if (dateFromError || dateToError) {
+                                                clearFilterErrors();
+                                            }
+                                        }}
+                                    />
                                     до:
-                                    <Input height="small" />
+                                    <Input
+                                        type="date"
+                                        height="small"
+                                        isWide
+                                        value={dateTo}
+                                        onChange={(e) => {
+                                            setDateTo(e.target.value);
+                                            if (dateFromError || dateToError) {
+                                                clearFilterErrors();
+                                            }
+                                        }}
+                                    />
                                 </FilterItemInput>
                             </FilterItem>
                             <FilterItem>
@@ -274,6 +318,13 @@ const Statistics: FC = () => {
                                     </Select>
                                 </FilterItemInput>
                             </FilterItem>
+                            {(dateFromError || dateToError) && (
+                                <FilterItem>
+                                    <FilterItemTitle style={{ color: 'red' }}>
+                                        {dateFromError || dateToError}
+                                    </FilterItemTitle>
+                                </FilterItem>
+                            )}
                         </Filters>
                     </FiltersWrapper>
                 </MainWrapper>
@@ -283,15 +334,23 @@ const Statistics: FC = () => {
 };
 
 function days(records: RecordX[]): string[] {
-    const daysA = records.map((r) => r.date);
+    const daysA = records.map((r) => normalizeDate(+r.date).toString());
 
     const daysB = Array.from(new Set(daysA));
     daysB.sort();
     return daysB;
 }
 
+const normalizeDate = (date: Date | number) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+};
+
 function groupByDay(records: RecordX[], days: string[]): RecordX[][] {
-    return days.map((day) => records.filter((r) => r.date === day));
+    return days.map((day) =>
+        records.filter((r) => normalizeDate(+r.date).toString() == day)
+    );
 }
 
 export default Statistics;

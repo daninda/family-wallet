@@ -8,6 +8,8 @@ import { network } from '../../services/network/network';
 import { MemberCard } from './MemberCard';
 import { User } from '../../models/auth';
 import { RequestCard } from './RequestCard';
+import { showSuccessToast } from '../../utils/utils';
+import { ToastContainer } from 'react-toastify';
 
 const PageWrapper = styled.div`
     padding-top: 16px;
@@ -61,7 +63,10 @@ export function Members() {
 
     const acceptUser = (userId: number) => {
         return network.member.acceptRequest(userId).then(() => {
-            network.member.joinRequests().then(setJoinRequests);
+            network.member.joinRequests().then((data) => {
+                setJoinRequests(data);
+                showSuccessToast('Заявка успешно принята');
+            });
         });
     };
 
@@ -116,21 +121,31 @@ export function Members() {
                         id={user.id}
                         title={user.name}
                         limit={limits[i]}
-                        onKick={(id) =>
-                            network.member.kickUser(id).then(requestMembers)
-                        }
-                        onLimitChange={(id, limit) => {
+                        onKick={(id) => {
+                            network.member.kickUser(id).then(() => {
+                                requestMembers();
+                                showSuccessToast(
+                                    'Пользователь успешно исключен из семьи'
+                                );
+                            });
+                        }}
+                        onLimitChange={(_, limit) => {
                             const clone = [...limits];
                             clone[i] = limit;
                             setLimits(clone);
                         }}
-                        onUnlimited={(id) =>
-                            network.member.removeLimit(id).then(requestMembers)
-                        }
+                        onUnlimited={(id) => {
+                            network.member.removeLimit(id).then(() => {
+                                requestMembers();
+
+                                showSuccessToast('Лимит успешно снят');
+                            });
+                        }}
                         onSetLimit={(id, limit) =>
-                            network.member
-                                .changeLimit(id, limit)
-                                .then(requestMembers)
+                            network.member.changeLimit(id, limit).then(() => {
+                                requestMembers();
+                                showSuccessToast('Лимит успешно изменен');
+                            })
                         }
                     />
                 ))}
@@ -152,6 +167,7 @@ export function Members() {
                         }
                     />
                 ))}
+                <ToastContainer />
             </PageWrapper>
         </Wrapper>
     );

@@ -20,7 +20,7 @@ type UserOutput struct {
 	Accepted    bool   `json:"accepted"`
 	IsAdmin     bool   `json:"isAdmin"`
 	HouseholdId int    `json:"householdId"`
-	Limitation  int    `json:"limitation"`
+	Limitation  *int   `json:"limitation"`
 }
 
 type LoginInput struct {

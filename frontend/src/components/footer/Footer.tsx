@@ -37,6 +37,10 @@ const Button = styled.a`
     &:visited {
         color: ${({ theme }) => theme.colors.primaryText};
     }
+
+    &:active {
+        color: ${({ theme }) => theme.colors.primaryText};
+    }
 `;
 
 const HelpWrapper = styled.div`
@@ -102,9 +106,7 @@ const Footer: FC = () => {
                             <HelpParagraph>
                                 Руководитель: доцент кафедры П.С. Зеленко Л.С.
                             </HelpParagraph>
-                            <HelpParagraph>
-                                Разработчики: обучающиеся группы 6401-020302D:
-                            </HelpParagraph>
+                            <HelpParagraph>Разработчики:</HelpParagraph>
                             <HelpParagraph
                                 style={{
                                     textAlign: 'left',

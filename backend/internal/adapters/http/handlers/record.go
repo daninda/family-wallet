@@ -119,6 +119,21 @@ func (h *Record) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(record)
 }
 
+func (h *Record) GetTotalByMonth(w http.ResponseWriter, r *http.Request) {
+	userId := r.Context().Value(middlewares.User_id).(int)
+
+	totalPrice, err := h.record.GetTotalByMonth(userId)
+
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(totalPrice)
+}
+
 func parseIntQueryParam(query map[string][]string, key string) int {
 	if val, ok := query[key]; ok && len(val) > 0 {
 		parsed, err := strconv.Atoi(val[0])

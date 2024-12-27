@@ -119,6 +119,30 @@ func (s *Record) GetAllFiltered(userId int, filter entities.Filter) ([]dto.Recor
 	return records, err
 }
 
+func (s *Record) GetTotalByMonth(userId int) (int, error) {
+	now := time.Now()
+	currentYear, currentMonth := now.Year(), now.Month()
+
+	// Начало и конец месяца в миллисекундах
+	startOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.UTC).UnixMilli()
+	endOfMonth := time.Date(currentYear, currentMonth+1, 1, 0, 0, 0, 0, time.UTC).UnixMilli()
+
+	// SQL-запрос для подсчёта общей суммы
+	query := `
+		SELECT COALESCE(SUM(price), 0) AS total
+		FROM records
+		WHERE CAST(date AS BIGINT) >= $1 AND CAST(date AS BIGINT) < $2
+		AND user_id = $3`
+
+	var total int
+	err := s.db.QueryRow(query, startOfMonth, endOfMonth, userId).Scan(&total)
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
 func (s *Record) Create(userId int, subcategoryId int, description string, price int, date int) (*entities.Record, error) {
 	row := s.db.QueryRow(`
 		INSERT INTO records (user_id, subcategory_id, description, price, date) 

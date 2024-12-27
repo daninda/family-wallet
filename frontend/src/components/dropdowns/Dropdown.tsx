@@ -42,6 +42,7 @@ const DropdownItem = styled.div`
 const DropdownContainer = styled.div<{ width?: 'content' | 'medium' | 'wide' }>`
     position: relative;
     display: inline-block;
+    height: 40px;
     width: ${({ width }) =>
         width === 'content'
             ? 'min-content'

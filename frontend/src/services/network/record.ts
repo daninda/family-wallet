@@ -18,6 +18,11 @@ export class RecordNetwork extends AbstractSubNetwork {
         return response.data;
     }
 
+    async getTotalByMonth(): Promise<number> {
+        const response = await this.axios().get<number>('/records/get-total');
+        return response.data;
+    }
+
     async create(data: CreateRecordRequest): Promise<CreateRecordResponse> {
         const response = await this.axios().post<CreateRecordResponse>(
             '/records',

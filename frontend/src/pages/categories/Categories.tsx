@@ -175,9 +175,9 @@ const Categories: FC = () => {
                     />
                 </Tools>
                 <CategoriesWrapper>
-                    <CategoryWrapper>
-                        {categories.map((category) => (
-                            <>
+                    {categories.map((category) => {
+                        return (
+                            <CategoryWrapper key={category.id}>
                                 <CategoryDiv>
                                     <CategoryTitle>
                                         {category.name}
@@ -195,7 +195,9 @@ const Categories: FC = () => {
                                     {subcategories[category.id] &&
                                         subcategories[category.id].map(
                                             (subcategory) => (
-                                                <CategoryDiv>
+                                                <CategoryDiv
+                                                    key={subcategory.id}
+                                                >
                                                     <CategoryTitle>
                                                         {subcategory.name}
                                                     </CategoryTitle>
@@ -223,16 +225,15 @@ const Categories: FC = () => {
                                         }}
                                     />
                                 </SubCategoriesWrapper>
-                            </>
-                        ))}
-
-                        <Button
-                            height="large"
-                            width="wide"
-                            title="Добавить категорию"
-                            onClick={() => setCategoryModal(true)}
-                        />
-                    </CategoryWrapper>
+                                <Button
+                                    height="large"
+                                    width="wide"
+                                    title="Добавить категорию"
+                                    onClick={() => setCategoryModal(true)}
+                                />
+                            </CategoryWrapper>
+                        );
+                    })}
                 </CategoriesWrapper>
             </PageWrapper>
         </Wrapper>

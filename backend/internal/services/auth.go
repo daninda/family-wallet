@@ -4,6 +4,7 @@ import (
 	"errors"
 	"family-wallet/internal/entities"
 	"family-wallet/internal/services/dto"
+	"log"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -119,10 +120,11 @@ func (a *Auth) GetUser(id int) (*dto.UserOutput, error) {
 	var user entities.User
 
 	if err := row.StructScan(&user); err != nil {
+		log.Println(err.Error())
 		return nil, errors.New("user not found")
 	}
 
-	return &dto.UserOutput{Id: user.Id, Name: user.Name, Email: user.Email, Accepted: user.Accepted, IsAdmin: user.IsAdmin, HouseholdId: user.HouseholdId}, nil
+	return &dto.UserOutput{Id: user.Id, Name: user.Name, Email: user.Email, Accepted: user.Accepted, IsAdmin: user.IsAdmin, HouseholdId: user.HouseholdId, Limitation: user.Limitation}, nil
 }
 
 func (a *Auth) Accepted(id int) (bool, error) {

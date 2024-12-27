@@ -31,7 +31,7 @@ const Router: FC<Props> = ({ isAuth, isLoading, user }) => {
                 </Route>
             </Routes>
         );
-    } else if (!user?.accepted) {
+    } else if (!user?.accepted && !user?.isAdmin) {
         return (
             <Routes>
                 <Route element={<Main user={user} />}>
