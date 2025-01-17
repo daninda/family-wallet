@@ -1,8 +1,8 @@
 package services
 
 import (
+	"errors"
 	"family-wallet/internal/entities"
-	"log"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -24,12 +24,20 @@ func (s *Subcategory) GetAll(categoryId int) ([]entities.Subcategory, error) {
 	return subcategories, err
 }
 
-
 func (s *Subcategory) Create(categoryId int, name string) (*entities.Subcategory, error) {
-	log.Println(categoryId)
+	isUnique, err := s.CheckUnique(name, categoryId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !isUnique {
+		return nil, errors.New("is not unique")
+	}
+
 	row := s.db.QueryRow("INSERT INTO subcategories (name, category_id) VALUES ($1, $2) RETURNING id", name, categoryId)
 	var id int
-	err := row.Scan(&id)
+	err = row.Scan(&id)
 	return &entities.Subcategory{Id: id, Name: name, CategoryId: categoryId}, err
 }
 
@@ -43,4 +51,19 @@ func (s *Subcategory) Update(id int, subcategory *entities.Subcategory) (*entiti
 func (s *Subcategory) Delete(id int) error {
 	_, err := s.db.Exec("DELETE FROM subcategories WHERE id = $1", id)
 	return err
+}
+
+func (s *Subcategory) CheckUnique(name string, categoryId int) (bool, error) {
+	row := s.db.DB.QueryRow(`
+		SELECT COUNT(subcategories.id) co FROM subcategories 
+		WHERE subcategories.category_id = $1 AND subcategories.name ILIKE $2`,
+		categoryId, name)
+
+	var count int
+
+	if err := row.Scan(&count); err != nil {
+		return false, err
+	}
+
+	return count == 0, nil
 }

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"family-wallet/internal/entities"
 	"family-wallet/internal/services/dto"
 
@@ -45,6 +46,16 @@ func (s *Category) GetAll(householdId int) ([]dto.CategoryOutput, error) {
 }
 
 func (s *Category) Create(householdId int, name string) (*entities.Category, error) {
+	isUnique, err := s.CheckUnique(name, householdId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !isUnique {
+		return nil, errors.New("is not unique")
+	}
+
 	rows, err := s.db.DB.Query(`
 		INSERT INTO categories (household_id, name) 
 		VALUES ($1, $2) RETURNING id`,
@@ -79,4 +90,19 @@ func (s *Category) Delete(id int) error {
 		return err
 	}
 	return nil
+}
+
+func (s *Category) CheckUnique(name string, householdId int) (bool, error) {
+	row := s.db.DB.QueryRow(`
+		SELECT COUNT(categories.id) co FROM categories 
+		WHERE categories.household_id = $1 AND categories.name ILIKE $2`,
+		householdId, name)
+
+	var count int
+
+	if err := row.Scan(&count); err != nil {
+		return false, err
+	}
+
+	return count == 0, nil
 }

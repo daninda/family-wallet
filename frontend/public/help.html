@@ -5,6 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Семейная копилка</title>
         <style>
+            html {
+                scroll-behavior: smooth;;
+            }
             body {
                 font-family: Arial, sans-serif;
                 margin: 0;
@@ -63,19 +66,20 @@
                 </p>
 
                 <ul>
-                    <li>Главная страница</li>
-                    <li>Страница статистики</li>
-                    <li>Страница управления участниками</li>
-                    <li>Страница управления категориями и подкатегориями</li>
+                    <li><a href='#1'>Главная страница</a></li>
+                    <li><a href='#2'>Страница статистики</a></li>
+                    <li><a href='#3'>Страница управления участниками</a></li>
+                    <li><a href='#4'>Страница управления категориями и подкатегориями</a></li>
                 </ul>
             </section>
 
-            <section>
+            <section id='1'>
                 <h2>Главная страница</h2>
                 <p>
                     После входа в учетную запись в приложении откроется главная
-                    страница
+                    страница приложения, пример которой представлен на картинке ниже.
                 </p>
+                <img src='/main.png' style='display: block; width: 100%; margin: 32px 0;'/>
                 <p>
                     На этой странице пользователь может выполнять следующие
                     действия:
@@ -119,8 +123,9 @@
                 </ul>
             </section>
 
-            <section>
+            <section id='2'>
                 <h2>Страница статистики</h2>
+                <img src='/stats.png' style='display: block; width: 100%; margin: 32px 0;'/>
                 <p>На этой странице пользователь может:</p>
                 <ul>
                     <li>
@@ -144,8 +149,9 @@
                 </ul>
             </section>
 
-            <section>
+            <section id='3'>
                 <h2>Страница управления участниками</h2>
+                <img src='/members.png' style='display: block; width: 100%; margin: 32px 0;'/>
                 <p>
                     Эта страница доступна только для главы семьи и на ней он
                     может:
@@ -178,8 +184,9 @@
                 </ul>
             </section>
 
-            <section>
+            <section id='4'>
                 <h2>Страница управления категория и подкатегориями</h2>
+                <img src='/categories.png' style='display: block; width: 100%; margin: 32px 0;'/>
                 <p>
                     Эта страница доступна только для главы семьи и на ней он
                     может:

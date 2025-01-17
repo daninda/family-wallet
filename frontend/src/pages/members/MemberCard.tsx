@@ -123,12 +123,6 @@ export function MemberCard(props: Props) {
                     title="Выгнать"
                     onClick={() => onKick(id)}
                 />
-                <Button
-                    color="green"
-                    height="large"
-                    width="content"
-                    title="Посмотреть"
-                />
             </MemberActions>
         </Member>
     );
